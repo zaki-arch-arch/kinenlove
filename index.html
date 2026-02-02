@@ -2,19 +2,19 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>トキメキ禁煙メモリアル v4.9</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>トキメキ禁煙メモリアル v5.0</title>
     
     <!-- エラーハンドリング -->
     <script>
         window.onerror = function(msg, url, line, col, error) {
             var root = document.getElementById('root');
-            if (root) {
+            if (root && !root.innerHTML.includes('アプリ画面')) {
                 root.innerHTML = '<div style="padding:20px; color:red; background:#fff; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; overflow:auto;">' +
                     '<h3>⚠️ エラーが発生しました</h3>' +
                     '<p>' + msg + '</p>' +
                     '<p>Line: ' + line + '</p>' +
-                    '<p style="color:black; font-size:12px; margin-top:10px;">右上の「データ削除」ボタンが押せない場合は、ブラウザの履歴/データを消去して再読み込みしてください。</p>' +
+                    '<button onclick="localStorage.clear();location.reload();" style="margin-top:20px; padding:10px 20px; background:#333; color:#fff; border:none; border-radius:5px;">データをリセットして修復</button>' +
                     '</div>';
             }
             return false;
@@ -32,18 +32,17 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        body { 
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; 
-            touch-action: manipulation;
-            background-color: #fff1f2;
-            color: #334155;
-            overscroll-behavior-y: none; /* 引っ張り更新などを防止 */
-            -webkit-font-smoothing: antialiased;
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #fff1f2; /* rose-50 */
+            color: #334155; /* slate-700 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Animations */
+        /* アニメーション定義 */
         @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
         .animate-breathe { animation: breathe 6s ease-in-out infinite; }
 
@@ -53,34 +52,22 @@
         @keyframes circle-breathe { 0% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1.1); opacity: 0.9; } 50% { transform: scale(1.1); opacity: 0.9; } 100% { transform: scale(0.6); opacity: 0.4; } }
         .animate-circle-breathe { animation: circle-breathe 8s ease-in-out infinite; }
         
-        @keyframes floating { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-        .animate-float { animation: floating 4s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
+        .animate-float { animation: float 5s ease-in-out infinite; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-
-        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
-        .animate-pop-in { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     </style>
 </head>
 <body>
-    <div id="root" class="h-screen flex items-center justify-center text-rose-400 font-bold bg-rose-50">
-        <div class="text-center">
-            <p class="text-3xl mb-4 animate-bounce">💗</p>
-            <p>Loading...</p>
-        </div>
-    </div>
+    <div id="root"></div>
 
     <script type="text/babel">
-        if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
-            throw new Error("Reactライブラリの読み込みに失敗しました。");
-        }
+        if (typeof React === 'undefined') throw new Error("React load failed");
 
-        const { useState, useEffect, useRef, useMemo } = React;
+        const { useState, useEffect, useMemo } = React;
 
-        // ---------------------------------------------------------
-        //  Icons
-        // ---------------------------------------------------------
+        // --- Icons ---
         const Icons = {
             Heart: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>,
             Alert: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
@@ -90,17 +77,13 @@
             Check: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
             Activity: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
             Trash: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
-            Star: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
             Smile: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
-            Settings: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
-            Hand: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>,
+            Star: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
         };
 
-        const APP_KEY = 'tokikin_v4_9'; // キー変更 (データ分離)
+        const APP_KEY = 'tokikin_v5_0';
         
-        // ---------------------------------------------------------
-        //  Data
-        // ---------------------------------------------------------
+        // --- Constants ---
         const SCENARIO_DB = {
             stage1: {
                 morning: ["おはよう！今日も一日、肺をキレイに保とうね！", "朝一番の深呼吸、気持ちいいでしょ？", "今日も禁煙記録、更新できそうかな？応援してるよ！"],
@@ -130,16 +113,12 @@
         ];
 
         const HEALTH_BENEFITS = [
-            { hours: 0, title: "スタート！", text: "体内の一酸化炭素排出が始まります。まずは深呼吸！" },
-            { hours: 1, title: "血圧・脈拍の正常化", text: "手足の体温が回復し始めています。リラックスできていますか？" },
-            { hours: 8, title: "酸素濃度回復", text: "血中の酸素濃度が正常値に戻りました！運動が少し楽になるはず。" },
-            { hours: 24, title: "心臓発作リスク低下", text: "24時間達成！心臓への負担が減り始めています。すごい！" },
-            { hours: 72, title: "ニコチン消失", text: "体内からニコチンが完全に抜けました！ここが一番の踏ん張りどころ！" },
-            { hours: 168, title: "睡眠リズムの改善", text: "1週間達成！睡眠の質が良くなり、目覚めがスッキリしてきます。" },
-            { hours: 720, title: "血行改善・美肌効果", text: "1ヶ月達成！血液循環が良くなり、肌のトーンが明るくなっているはず。" },
-            { hours: 2160, title: "肺機能の向上", text: "3ヶ月達成！肺活量が増え、階段の上り下りも楽になります。" },
-            { hours: 4320, title: "免疫力アップ", text: "半年達成！風邪を引きにくくなり、体力が全体的に向上しています。" },
-            { hours: 8760, title: "心臓病リスク半減", text: "1年達成！心臓疾患のリスクが喫煙者の半分になりました。立派です！" }
+            { hours: 0, title: "スタート！", text: "まずは深呼吸！体内の一酸化炭素排出が始まります。" },
+            { hours: 24, title: "心臓発作リスク低下", text: "24時間達成！心臓への負担が減り始めています。" },
+            { hours: 72, title: "ニコチン消失", text: "体内からニコチンが完全に抜けました！踏ん張りどころ！" },
+            { hours: 168, title: "睡眠リズムの改善", text: "1週間達成！睡眠の質が良くなり、目覚めがスッキリします。" },
+            { hours: 720, title: "血行改善・美肌効果", text: "1ヶ月達成！血液循環が良くなり、肌のトーンが明るくなります。" },
+            { hours: 8760, title: "心臓病リスク半減", text: "1年達成！心臓疾患のリスクが喫煙者の半分になりました！" }
         ];
 
         const SOS_MESSAGES = [
@@ -155,9 +134,7 @@
             { id: 3, type: '小吉', love: 20, msg: '地道な努力が実を結ぶ日。コツコツいこう。' },
         ];
 
-        // ---------------------------------------------------------
-        //  Utils
-        // ---------------------------------------------------------
+        // --- Utils ---
         const Storage = {
             get: (key, def) => {
                 try {
@@ -171,7 +148,7 @@
                     return true;
                 } catch(e) {
                     if (e.name === 'QuotaExceededError') {
-                        alert("データの保存容量がいっぱいです！\n高画質画像を複数枚保存できませんでした。\n枚数を減らすか、別の画像でお試しください。");
+                        alert("容量不足で保存できません。画像を減らしてください。");
                     }
                     return false;
                 }
@@ -198,7 +175,7 @@
                         canvas.width = w; canvas.height = h;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.75));
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
                     };
                     img.src = e.target.result;
                 };
@@ -206,16 +183,13 @@
             });
         };
 
-        // ---------------------------------------------------------
-        //  App Component
-        // ---------------------------------------------------------
+        // --- Components ---
         function App() {
             const [gameState, setGameState] = useState('loading');
             const [profile, setProfile] = useState(null);
             const [heroines, setHeroines] = useState([]);
             const [timerData, setTimerData] = useState({ d:0, h:0, m:0, s:0, money:0, totalHours: 0 });
             
-            // モーダル・モード系
             const [isSosMode, setIsSosMode] = useState(false);
             const [sosMessage, setSosMessage] = useState("");
             const [isFullResetMode, setIsFullResetMode] = useState(false);
@@ -224,31 +198,9 @@
             const [giftEvent, setGiftEvent] = useState(null);
             const [tapAnim, setTapAnim] = useState(false);
 
-            // 登録・設定用
             const [regMode, setRegMode] = useState('normal'); 
             const [previewImages, setPreviewImages] = useState({ normal: null, happy: null, sad: null });
-
             const [dialogue, setDialogue] = useState("");
-
-            const getScenario = (love = 0) => {
-                const h = new Date().getHours();
-                let timeKey = (h >= 5 && h < 11) ? 'morning' : (h >= 11 && h < 18) ? 'day' : (h >= 23 || h < 4) ? 'lateNight' : 'night';
-                let stage = love >= 500 ? 'stage3' : love >= 100 ? 'stage2' : 'stage1';
-                const list = SCENARIO_DB[stage][timeKey];
-                return list[Math.floor(Math.random() * list.length)];
-            };
-
-            // 安全な画像取得のためのメモ化 (Fix: sadImg is not defined 対応)
-            const heroImages = useMemo(() => {
-                const active = heroines.find(h => h.id === profile?.currentHeroineId) || heroines[0];
-                if (!active) return { normal: null, happy: null, sad: null };
-                
-                return {
-                    normal: active.img || null,
-                    happy: active.imgHappy || active.img || null,
-                    sad: active.imgSad || active.img || null
-                };
-            }, [heroines, profile?.currentHeroineId]);
 
             // 初期化
             useEffect(() => {
@@ -257,7 +209,6 @@
                 if (p && p.startQuitDate) {
                     setProfile(p);
                     setHeroines(h);
-                    setDialogue(getScenario(p.love || 0));
                     setGameState('main');
                 } else {
                     setProfile({ dailyTarget: 20, pricePerPack: 600, money: 0, love: 0, goalName: '', goalCost: 0, lastLoginDate: null });
@@ -265,24 +216,33 @@
                 }
             }, []);
 
-            // ログインボーナス
+            // シナリオ更新
             useEffect(() => {
                 if (gameState === 'main' && profile) {
-                    const todayStr = new Date().toDateString();
-                    if (profile.lastLoginDate !== todayStr) {
-                        const omikuji = OMIKUJI_DATA[Math.floor(Math.random() * OMIKUJI_DATA.length)];
-                        const newLove = (profile.love || 0) + omikuji.love;
-                        const newProfile = { ...profile, love: newLove, lastLoginDate: todayStr };
-                        setProfile(newProfile);
-                        Storage.set('profile', newProfile);
-                        setTimeout(() => setLoginBonus(omikuji), 1000);
-                    }
+                    const h = new Date().getHours();
+                    let timeKey = (h >= 5 && h < 11) ? 'morning' : (h >= 11 && h < 18) ? 'day' : (h >= 23 || h < 4) ? 'lateNight' : 'night';
+                    let stage = (profile.love || 0) >= 500 ? 'stage3' : (profile.love || 0) >= 100 ? 'stage2' : 'stage1';
+                    const list = SCENARIO_DB[stage][timeKey];
+                    setDialogue(list[Math.floor(Math.random() * list.length)]);
                 }
-            }, [gameState]);
+            }, [gameState, profile?.love]); // 依存配列修正
 
-            // タイマー
+            // タイマー & ログインボーナス
             useEffect(() => {
                 if(!profile?.startQuitDate) return;
+                
+                // ログインボーナス
+                const todayStr = new Date().toDateString();
+                if (profile.lastLoginDate !== todayStr && gameState === 'main') {
+                    const omikuji = OMIKUJI_DATA[Math.floor(Math.random() * OMIKUJI_DATA.length)];
+                    const newLove = (profile.love || 0) + omikuji.love;
+                    const newProfile = { ...profile, love: newLove, lastLoginDate: todayStr };
+                    setProfile(newProfile);
+                    Storage.set('profile', newProfile);
+                    setTimeout(() => setLoginBonus(omikuji), 1500);
+                }
+
+                // タイマー
                 const tick = () => {
                     const now = new Date();
                     const start = new Date(profile.startQuitDate);
@@ -303,7 +263,7 @@
                 tick();
                 const interval = setInterval(tick, 1000);
                 return () => clearInterval(interval);
-            }, [profile]);
+            }, [profile, gameState]);
 
             useEffect(() => {
                 if (isSosMode) {
@@ -313,6 +273,17 @@
                     return () => clearInterval(interval);
                 }
             }, [isSosMode]);
+
+            // 画像処理
+            const heroImages = useMemo(() => {
+                const active = heroines.find(h => h.id === profile?.currentHeroineId) || heroines[0];
+                if (!active) return { normal: null, happy: null, sad: null };
+                return {
+                    normal: active.img || null,
+                    happy: active.imgHappy || active.img || null,
+                    sad: active.imgSad || active.img || null
+                };
+            }, [heroines, profile?.currentHeroineId]);
 
             const handleImageSelect = async (e, type) => {
                 if (e.target.files?.[0]) {
@@ -343,14 +314,10 @@
                     currentHeroineId: newHeroine.id 
                 };
 
-                const saveHeroine = Storage.set('heroines', newHeroines);
-                const saveProfile = Storage.set('profile', newProfile);
-
-                if (!saveHeroine || !saveProfile) return; 
+                if (!Storage.set('heroines', newHeroines) || !Storage.set('profile', newProfile)) return;
 
                 setHeroines(newHeroines);
                 setProfile(newProfile);
-                setDialogue(getScenario(0));
                 setGameState('main');
             };
 
@@ -375,10 +342,7 @@
                 Storage.set('profile', newProfile);
                 setDialogue(`「${gift.name}！？\nすごーい！ありがとう！\n禁煙頑張ってくれて嬉しい！」`);
                 setGiftEvent({ name: gift.name, icon: gift.icon, msg: `Love +${gift.love}`, loveUp: gift.love });
-                setTimeout(() => {
-                    setGiftEvent(null);
-                    setDialogue(getScenario(newLove));
-                }, 4000);
+                setTimeout(() => setGiftEvent(null), 4000);
             };
 
             const doFullReset = () => {
@@ -388,7 +352,7 @@
                 Storage.set('profile', newProfile);
                 setShowResetConfirm(false);
                 setIsSosMode(false);
-                alert("リセットしました。「またここから始めよう？」");
+                alert("リセットしました。また始めましょう！");
             };
 
             const doPenalty = () => {
@@ -409,7 +373,7 @@
                 window.location.reload();
             };
 
-            // 画像表示ロジック (Fix: heroImagesから取得)
+            // 画像表示ロジック
             let currentImg = heroImages.normal;
             if (isSosMode) currentImg = heroImages.sad;
             else if (giftEvent || loginBonus) currentImg = heroImages.happy;
@@ -422,9 +386,9 @@
             // --- 1. セットアップ ---
             if (gameState === 'setup') {
                 return (
-                    <div className="min-h-screen bg-rose-50 flex items-center justify-center p-6">
+                    <div className="min-h-screen flex items-center justify-center p-6 bg-rose-50">
                         <form onSubmit={finishSetup} className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm space-y-4 animate-float">
-                            <h1 className="text-xl font-black text-rose-500 text-center mb-4">禁煙メモリアル v4.9</h1>
+                            <h1 className="text-xl font-black text-rose-500 text-center mb-4">禁煙メモリアル v5.0</h1>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="text-xs font-bold text-slate-500">1日の本数</label><input name="c" type="number" defaultValue="20" className="w-full p-2 bg-rose-50 rounded-lg" required /></div>
                                 <div><label className="text-xs font-bold text-slate-500">1箱の値段</label><input name="p" type="number" defaultValue="600" className="w-full p-2 bg-rose-50 rounded-lg" required /></div>
@@ -443,9 +407,8 @@
             // --- 2. パートナー登録 ---
             if (gameState === 'char_reg') {
                 return (
-                    <div className="min-h-screen bg-rose-50 flex flex-col items-center justify-center p-6">
+                    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-rose-50">
                         <h2 className="text-xl font-bold text-slate-700 mb-4">パートナー設定</h2>
-                        
                         <div className="flex bg-white rounded-full p-1 shadow-sm mb-4 w-full max-w-xs">
                             {['normal', 'happy', 'sad'].map(mode => (
                                 <button key={mode} onClick={() => setRegMode(mode)} 
@@ -456,10 +419,8 @@
                                 </button>
                             ))}
                         </div>
-
                         <div className="relative w-64 h-64 bg-white border-4 border-dashed rounded-3xl flex items-center justify-center overflow-hidden shadow-sm transition-colors duration-300"
                              style={{borderColor: regMode === 'normal' ? '#fda4af' : regMode === 'happy' ? '#facc15' : '#3b82f6'}}>
-                            
                             {previewImages[regMode] ? 
                                 <img src={previewImages[regMode]} className="w-full h-full object-cover" /> 
                                 : <div className="text-center p-4 text-slate-300">
@@ -470,23 +431,20 @@
                             <input type="file" accept="image/*" onChange={(e) => handleImageSelect(e, regMode)} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>
                         <p className="text-xs text-slate-400 mt-2 mb-6">※画質重視版（保存容量に注意）</p>
-
-                        <button onClick={registerHeroine} className={`px-10 py-3 rounded-full font-bold shadow-lg text-white transition-all ${previewImages.normal ? 'bg-rose-500 hover:scale-105' : 'bg-slate-300 pointer-events-none'}`}>
-                            これで始める
-                        </button>
+                        <button onClick={registerHeroine} className={`px-10 py-3 rounded-full font-bold shadow-lg text-white transition-all ${previewImages.normal ? 'bg-rose-500 hover:scale-105' : 'bg-slate-300 pointer-events-none'}`}>これで始める</button>
                     </div>
                 );
             }
 
-            // --- 3. メイン画面 (Fix: 縦スクロール対応 & 中央寄せ解除) ---
+            // --- 3. メイン画面 (v5.0: 自然なフローレイアウト & min-h-[100dvh]) ---
             return (
-                // 修正: min-h-screenのみにし、flexのcenter寄せを削除して自然なフローレイアウトに
-                <div className="min-h-screen bg-gradient-to-b from-rose-50 to-white pb-32 relative overflow-hidden">
+                <div className="min-h-[100dvh] bg-gradient-to-b from-rose-50 to-white pb-32 relative overflow-y-auto">
+                    {/* 背景装飾 */}
                     <div className="absolute top-0 left-0 w-full h-80 bg-rose-100 rounded-b-[60px] -z-10 shadow-inner"></div>
 
                     {/* ヘッダー */}
-                    <div className="relative z-[100] flex justify-between items-center p-6 pt-8">
-                        <div className="flex items-center gap-2 text-rose-500 font-bold bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">
+                    <div className="flex justify-between items-center p-6 pt-10 sticky top-0 z-50 bg-rose-100/80 backdrop-blur-sm rounded-b-2xl">
+                        <div className="flex items-center gap-2 text-rose-500 font-bold bg-white/90 px-3 py-1 rounded-full shadow-sm">
                             <Icons.Heart className="w-5 h-5" />
                             <span>Lv.{Math.floor((profile.love||0)/100) + 1}</span>
                         </div>
@@ -496,23 +454,18 @@
                     </div>
 
                     {/* パートナーエリア */}
-                    <div className="relative mx-auto w-72 h-72 mt-2 z-10">
+                    <div className="flex flex-col items-center mt-4 z-10">
                         <div 
-                            onClick={() => { setTapAnim(true); setTimeout(() => setTapAnim(false), 200); setDialogue(getScenario(profile.love)); }}
-                            className={`w-full h-full rounded-full border-[6px] border-white shadow-xl overflow-hidden bg-white animate-breathe relative cursor-pointer active:scale-95 transition-transform ${tapAnim ? 'animate-tap' : ''}`}
+                            onClick={() => { setTapAnim(true); setTimeout(() => setTapAnim(false), 200); }}
+                            className={`w-72 h-72 rounded-full border-[6px] border-white shadow-xl overflow-hidden bg-white animate-breathe relative cursor-pointer active:scale-95 transition-transform ${tapAnim ? 'animate-tap' : ''}`}
                         >
-                            {heroImages.normal ? 
-                                <img src={heroImages.normal} className="w-full h-full object-cover" 
-                                     onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} /> 
-                                : null
+                            {currentImg ? 
+                                <img src={currentImg} className="w-full h-full object-cover" /> 
+                                : <div className="w-full h-full bg-slate-200 flex flex-col items-center justify-center text-slate-400"><Icons.Camera className="w-8 h-8 opacity-50"/><span className="text-xs font-bold mt-1">NO IMAGE</span></div>
                             }
-                            <div className="w-full h-full bg-slate-200 flex flex-col items-center justify-center text-slate-400" style={{display: heroImages.normal ? 'none' : 'flex'}}>
-                                <Icons.Camera className="w-8 h-8 opacity-50"/>
-                                <span className="text-xs font-bold mt-1">NO IMAGE</span>
-                            </div>
                         </div>
                         
-                        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-72 z-20">
+                        <div className="relative mt-[-20px] z-20 w-72">
                             <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-rose-100 text-center animate-float">
                                 <p className="text-sm font-bold text-slate-700 leading-relaxed whitespace-pre-wrap">{dialogue}</p>
                             </div>
@@ -520,8 +473,8 @@
                     </div>
 
                     {/* ステータス */}
-                    <div className="mt-14 px-6 grid grid-cols-2 gap-4">
-                        <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-50 flex flex-col items-center">
+                    <div className="mt-8 px-6 grid grid-cols-2 gap-4">
+                        <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-50 flex flex-col items-center justify-center h-32">
                             <Icons.Clock className="w-5 h-5 text-slate-400 mb-1" />
                             <div className="text-xs text-slate-400 font-bold">禁煙時間</div>
                             <div className="text-center font-black text-slate-700">
@@ -532,13 +485,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-50 flex flex-col items-center justify-between">
+                        <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-50 flex flex-col items-center justify-between h-32">
                             <div className="flex flex-col items-center">
                                 <Icons.Wallet className="w-5 h-5 text-rose-400 mb-1" />
                                 <div className="text-xs text-slate-400 font-bold">節約金額</div>
                                 <div className="text-xl font-black text-rose-500 mt-1">¥{timerData.money.toLocaleString()}</div>
                             </div>
-                            
                             {profile.goalName && (
                                 <div className="w-full mt-2">
                                     <div className="flex justify-between text-[10px] text-slate-500 mb-1 font-bold">
@@ -573,9 +525,9 @@
                     </div>
 
                     {/* ギフト */}
-                    <div className="mt-8 pl-6 mb-20"> 
+                    <div className="mt-8 px-6 mb-20"> 
                         <h3 className="font-bold text-slate-700 mb-3 flex items-center gap-2 text-sm"><span className="bg-rose-100 text-rose-500 p-1 rounded-md"><Icons.Heart className="w-4 h-4"/></span> 思い出をプレゼント</h3>
-                        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-8 pr-6">
+                        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
                             {GIFTS.map(g => (
                                 <button key={g.id} onClick={() => giveGift(g)} className="flex-shrink-0 bg-white w-32 p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center gap-3 active:bg-rose-50 relative overflow-hidden group">
                                     <div className="absolute top-0 left-0 w-full h-1 bg-slate-100 group-hover:bg-rose-400"></div>
@@ -600,56 +552,43 @@
                         </div>
                     </div>
 
-                    {/* --- モーダル --- */}
-                    
-                    {/* データ削除確認 */}
+                    {/* モーダル群 */}
                     {isFullResetMode && (
                         <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                            <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl animate-[float_0.3s_ease-out]">
+                            <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl">
                                 <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Trash className="w-8 h-8" /></div>
                                 <h3 className="text-xl font-black text-slate-800 mb-2">データを削除しますか？</h3>
                                 <p className="text-sm text-slate-500 mb-6 leading-relaxed">これまでの記録、パートナーとの思い出が<br/>すべて消えてしまいます。</p>
                                 <div className="flex gap-3">
-                                    <button onClick={() => setIsFullResetMode(false)} className="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">キャンセル</button>
-                                    <button onClick={executeDataClear} className="flex-1 py-3 rounded-xl font-bold bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-200">削除する</button>
+                                    <button onClick={() => setIsFullResetMode(false)} className="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-600">キャンセル</button>
+                                    <button onClick={executeDataClear} className="flex-1 py-3 rounded-xl font-bold bg-rose-500 text-white shadow-lg">削除する</button>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* SOSモード (Fix: heroImages.sad を参照) */}
                     {isSosMode && (
                         <div className="fixed inset-0 bg-slate-900 z-[500] flex flex-col items-center justify-center text-white overflow-hidden p-6">
                             <button className="absolute top-6 right-6 p-2 bg-white/10 rounded-full z-50" onClick={() => setIsSosMode(false)}><Icons.Check className="w-6 h-6" /></button>
-                            
-                            <h2 className="text-3xl font-black text-rose-400 mb-6 animate-pulse tracking-widest">EMERGENCY</h2>
-
+                            <h2 className="text-3xl font-black text-rose-400 mb-6 animate-pulse tracking-widest mt-12">EMERGENCY</h2>
                             <div className="relative w-64 h-64 mb-8">
                                 <div className="w-full h-full rounded-full border-4 border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.3)] overflow-hidden bg-slate-800 relative z-10 animate-breathe">
-                                    {/* 修正: 変数名 sadImg -> heroImages.sad */}
-                                    {heroImages.sad ? 
-                                        <img src={heroImages.sad} className="w-full h-full object-cover filter grayscale-[30%] brightness-75" /> 
-                                        : <div className="w-full h-full flex items-center justify-center text-white/20"><Icons.Camera className="w-12 h-12"/></div>
-                                    }
+                                    {heroImages.sad ? <img src={heroImages.sad} className="w-full h-full object-cover filter grayscale-[30%] brightness-75" /> : <div className="w-full h-full flex items-center justify-center text-white/20"><Icons.Camera className="w-12 h-12"/></div>}
                                 </div>
-                                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-48 h-4 bg-black/50 blur-xl rounded-full"></div>
                             </div>
-
                             <div className="w-full max-w-sm text-center space-y-6 relative z-10">
                                 <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
                                     <p className="text-lg font-bold animate-fade-in leading-relaxed" key={sosMessage}>「{sosMessage}」</p>
                                 </div>
                                 <div className="flex gap-4 justify-center mt-4">
-                                    <button onClick={() => setIsSosMode(false)} className="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-bold shadow-lg transition transform active:scale-95">我慢する</button>
-                                    <button onClick={() => setShowResetConfirm(true)} className="bg-transparent border border-white/20 text-white/40 px-4 py-3 rounded-full text-xs hover:text-white/60 transition">もう無理...</button>
+                                    <button onClick={() => setIsSosMode(false)} className="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-bold shadow-lg">我慢する</button>
+                                    <button onClick={() => setShowResetConfirm(true)} className="bg-transparent border border-white/20 text-white/40 px-4 py-3 rounded-full text-xs">もう無理...</button>
                                 </div>
                             </div>
-
                             {showResetConfirm && (
                                 <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-[600] p-6">
                                     <div className="bg-white text-slate-800 p-6 rounded-2xl w-full max-w-sm text-center space-y-4 shadow-2xl">
                                         <p className="font-bold text-lg">本当に吸いますか？</p>
-                                        <p className="text-xs text-slate-500 mb-2">正直な申告をお願いします。</p>
                                         <button onClick={() => setShowResetConfirm(false)} className="w-full py-3 rounded-xl font-bold bg-slate-100">やっぱりやめる</button>
                                         <button onClick={doPenalty} className="w-full py-4 rounded-xl font-bold bg-yellow-400 text-yellow-900 shadow-sm border-b-4 border-yellow-500"><span className="text-xs block opacity-70 mb-1">継続</span>1本だけ吸ってしまった</button>
                                         <button onClick={doFullReset} className="w-full py-3 rounded-xl font-bold bg-rose-500 text-white shadow-sm border-b-4 border-rose-700"><span className="text-xs block opacity-70 mb-1">リセット</span>完全に挫折した</button>
@@ -659,18 +598,13 @@
                         </div>
                     )}
 
-                    {/* ギフト/ログボ演出 (Fix: heroImages.happy を参照) */}
                     {(giftEvent || loginBonus) && (
                         <div className="fixed inset-0 z-[800] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
                             <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-xs text-center shadow-2xl animate-[bounce_0.5s_ease-out] relative overflow-hidden border-4 border-rose-200">
                                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-100 via-transparent to-transparent opacity-50"></div>
                                 <div className="relative z-10 flex flex-col items-center">
                                     <div className="w-32 h-32 rounded-full border-4 border-yellow-300 shadow-lg overflow-hidden mb-4 bg-white">
-                                        {/* 修正: 変数名 happyImg -> heroImages.happy */}
-                                        {heroImages.happy ? 
-                                            <img src={heroImages.happy} className="w-full h-full object-cover" /> 
-                                            : <div className="w-full h-full flex items-center justify-center bg-yellow-50 text-yellow-300"><Icons.Smile className="w-10 h-10"/></div>
-                                        }
+                                        {heroImages.happy ? <img src={heroImages.happy} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-yellow-50 text-yellow-300"><Icons.Smile className="w-10 h-10"/></div>}
                                     </div>
                                     <div className="text-6xl mb-2 filter drop-shadow-sm">{giftEvent?.icon || "🎉"}</div>
                                     {loginBonus && <h3 className="text-2xl font-black text-rose-500 mb-2">{loginBonus.type}</h3>}
