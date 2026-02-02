@@ -3,8 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>トキメキ禁煙メモリアル v4.5</title>
+    <title>トキメキ禁煙メモリアル v4.7</title>
     
+    <!-- エラーハンドリング -->
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            var root = document.getElementById('root');
+            if (root) {
+                root.innerHTML = '<div style="padding:20px; color:red; background:#fff;">' +
+                    '<h3>⚠️ エラーが発生しました</h3>' +
+                    '<p>' + msg + '</p>' +
+                    '<p>Line: ' + line + '</p>' +
+                    '</div>';
+            }
+            return false;
+        };
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -48,9 +63,22 @@
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <!-- Reactがマウントされる要素 (初期表示あり) -->
+    <div id="root" class="h-screen flex items-center justify-center text-rose-400 font-bold bg-rose-50">
+        <div class="text-center">
+            <p class="text-2xl mb-2">💗</p>
+            <p>読み込み中...</p>
+            <p class="text-xs font-normal mt-2 text-rose-300">しばらくお待ちください</p>
+        </div>
+    </div>
 
     <script type="text/babel">
+        // 念のためライブラリチェック
+        if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+            document.getElementById('root').innerHTML = '<div style="padding:20px; text-align:center;">Reactの読み込みに失敗しました。<br>リロードしてください。</div>';
+            throw new Error("React Library Not Found");
+        }
+
         const { useState, useEffect, useRef } = React;
 
         // ---------------------------------------------------------
@@ -68,9 +96,10 @@
             Star: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
             Smile: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
             Settings: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+            Hand: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>,
         };
 
-        const APP_KEY = 'tokikin_v4_5'; // キー変更 (データ分離)
+        const APP_KEY = 'tokikin_v4_7'; // キー変更 (クリーンインストール)
         
         // ---------------------------------------------------------
         //  Data
@@ -106,6 +135,7 @@
         const HEALTH_BENEFITS = [
             { hours: 0, title: "スタート！", text: "体内の一酸化炭素排出が始まります。まずは深呼吸！" },
             { hours: 1, title: "血圧・脈拍の正常化", text: "手足の体温が回復し始めています。リラックスできていますか？" },
+            { hours: 8, title: "酸素濃度回復", text: "血中の酸素濃度が正常値に戻りました！運動が少し楽になるはず。" },
             { hours: 24, title: "心臓発作リスク低下", text: "24時間達成！心臓への負担が減り始めています。すごい！" },
             { hours: 72, title: "ニコチン消失", text: "体内からニコチンが完全に抜けました！ここが一番の踏ん張りどころ！" },
             { hours: 168, title: "睡眠リズムの改善", text: "1週間達成！睡眠の質が良くなり、目覚めがスッキリしてきます。" },
@@ -188,7 +218,6 @@
             const [heroines, setHeroines] = useState([]);
             const [timerData, setTimerData] = useState({ d:0, h:0, m:0, s:0, money:0, totalHours: 0 });
             
-            // モーダル・モード系
             const [isSosMode, setIsSosMode] = useState(false);
             const [sosMessage, setSosMessage] = useState("");
             const [isFullResetMode, setIsFullResetMode] = useState(false);
@@ -197,13 +226,11 @@
             const [giftEvent, setGiftEvent] = useState(null);
             const [tapAnim, setTapAnim] = useState(false);
 
-            // 登録・設定用
             const [regMode, setRegMode] = useState('normal'); 
             const [previewImages, setPreviewImages] = useState({ normal: null, happy: null, sad: null });
 
             const [dialogue, setDialogue] = useState("");
 
-            // シナリオ取得
             const getScenario = (love = 0) => {
                 const h = new Date().getHours();
                 let timeKey = (h >= 5 && h < 11) ? 'morning' : (h >= 11 && h < 18) ? 'day' : (h >= 23 || h < 4) ? 'lateNight' : 'night';
@@ -267,7 +294,6 @@
                 return () => clearInterval(interval);
             }, [profile]);
 
-            // SOSメッセージ
             useEffect(() => {
                 if (isSosMode) {
                     const updateMsg = () => setSosMessage(SOS_MESSAGES[Math.floor(Math.random() * SOS_MESSAGES.length)]);
@@ -277,7 +303,6 @@
                 }
             }, [isSosMode]);
 
-            // 画像選択
             const handleImageSelect = async (e, type) => {
                 if (e.target.files?.[0]) {
                     try {
@@ -287,7 +312,6 @@
                 }
             };
 
-            // パートナー登録
             const registerHeroine = () => {
                 if (!previewImages.normal) return alert("通常画像は必須です！");
                 
@@ -374,27 +398,25 @@
                 window.location.reload();
             };
 
-            // 画像表示ロジック
             const activeHeroine = heroines.find(h => h.id === profile?.currentHeroineId) || heroines[0];
             
-            // 通常画像
-            const normalImg = activeHeroine ? activeHeroine.img : null;
-            // 笑顔画像（ギフト/ログボ用）
-            const happyImg = activeHeroine ? (activeHeroine.imgHappy || activeHeroine.img) : null;
-            // 悲しみ画像（SOS用）
-            const sadImg = activeHeroine ? (activeHeroine.imgSad || activeHeroine.img) : null;
+            let currentImg = activeHeroine ? activeHeroine.img : null;
+            if (activeHeroine) {
+                if (isSosMode) currentImg = activeHeroine.imgSad;
+                else if (giftEvent || loginBonus) currentImg = activeHeroine.imgHappy;
+            }
 
             const currentHealthBenefit = HEALTH_BENEFITS.filter(h => h.hours <= timerData.totalHours).pop() || HEALTH_BENEFITS[0];
             const goalPercent = (profile?.goalCost > 0) ? Math.min(100, (timerData.money / profile.goalCost) * 100) : 0;
 
-            if (gameState === 'loading') return <div className="min-h-screen flex items-center justify-center text-rose-400">Loading...</div>;
+            if (gameState === 'loading') return null; // ローディング表示はHTML側で制御済み
 
             // --- 1. セットアップ ---
             if (gameState === 'setup') {
                 return (
                     <div className="min-h-screen bg-rose-50 flex items-center justify-center p-6">
                         <form onSubmit={finishSetup} className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm space-y-4 animate-float">
-                            <h1 className="text-xl font-black text-rose-500 text-center mb-4">禁煙メモリアル v4.5</h1>
+                            <h1 className="text-xl font-black text-rose-500 text-center mb-4">禁煙メモリアル v4.7</h1>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="text-xs font-bold text-slate-500">1日の本数</label><input name="c" type="number" defaultValue="20" className="w-full p-2 bg-rose-50 rounded-lg" required /></div>
                                 <div><label className="text-xs font-bold text-slate-500">1箱の値段</label><input name="p" type="number" defaultValue="600" className="w-full p-2 bg-rose-50 rounded-lg" required /></div>
@@ -453,7 +475,7 @@
                 <div className="min-h-screen bg-gradient-to-b from-rose-50 to-white pb-32 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-80 bg-rose-100 rounded-b-[60px] -z-10 shadow-inner"></div>
 
-                    {/* ヘッダー: 修正ポイント（pointer-events-noneを削除し、クリック可能に） */}
+                    {/* ヘッダー */}
                     <div className="relative z-[100] flex justify-between items-center p-6 pt-8">
                         <div className="flex items-center gap-2 text-rose-500 font-bold bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">
                             <Icons.Heart className="w-5 h-5" />
@@ -467,18 +489,18 @@
                         </button>
                     </div>
 
-                    {/* パートナーエリア (メイン画面では通常顔を表示) */}
+                    {/* パートナーエリア */}
                     <div className="relative mx-auto w-72 h-72 mt-2 z-10">
                         <div 
                             onClick={() => { setTapAnim(true); setTimeout(() => setTapAnim(false), 200); setDialogue(getScenario(profile.love)); }}
                             className={`w-full h-full rounded-full border-[6px] border-white shadow-xl overflow-hidden bg-white animate-breathe relative cursor-pointer active:scale-95 transition-transform ${tapAnim ? 'animate-tap' : ''}`}
                         >
-                            {normalImg ? 
-                                <img src={normalImg} className="w-full h-full object-cover" 
+                            {currentImg ? 
+                                <img src={currentImg} className="w-full h-full object-cover" 
                                      onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} /> 
                                 : null
                             }
-                            <div className="w-full h-full bg-slate-200 flex flex-col items-center justify-center text-slate-400" style={{display: normalImg ? 'none' : 'flex'}}>
+                            <div className="w-full h-full bg-slate-200 flex flex-col items-center justify-center text-slate-400" style={{display: currentImg ? 'none' : 'flex'}}>
                                 <Icons.Camera className="w-8 h-8 opacity-50"/>
                                 <span className="text-xs font-bold mt-1">NO IMAGE</span>
                             </div>
@@ -562,7 +584,7 @@
                         </div>
                     </div>
 
-                    {/* 好感度バー (復活) */}
+                    {/* 好感度バー */}
                     <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-100 p-4 pb-8 safe-area-pb z-30">
                         <div className="flex justify-between text-xs font-bold text-slate-400 mb-2">
                             <span>LOVE POINT (Lv.{Math.floor((profile.love||0)/100) + 1})</span>
