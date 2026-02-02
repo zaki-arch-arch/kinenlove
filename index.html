@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>トキメキ禁煙メモリアル v4.8</title>
+    <title>トキメキ禁煙メモリアル v4.9</title>
     
     <!-- エラーハンドリング -->
     <script>
@@ -14,7 +14,7 @@
                     '<h3>⚠️ エラーが発生しました</h3>' +
                     '<p>' + msg + '</p>' +
                     '<p>Line: ' + line + '</p>' +
-                    '<p style="color:black; font-size:12px; margin-top:10px;">お手数ですが、右上の「データ削除」ボタンで一度リセットするか、ブラウザのキャッシュをクリアしてください。</p>' +
+                    '<p style="color:black; font-size:12px; margin-top:10px;">右上の「データ削除」ボタンが押せない場合は、ブラウザの履歴/データを消去して再読み込みしてください。</p>' +
                     '</div>';
             }
             return false;
@@ -37,7 +37,7 @@
             touch-action: manipulation;
             background-color: #fff1f2;
             color: #334155;
-            overscroll-behavior: none; /* バウンススクロール防止 */
+            overscroll-behavior-y: none; /* 引っ張り更新などを防止 */
             -webkit-font-smoothing: antialiased;
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -72,7 +72,6 @@
     </div>
 
     <script type="text/babel">
-        // ライブラリチェック
         if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
             throw new Error("Reactライブラリの読み込みに失敗しました。");
         }
@@ -97,7 +96,7 @@
             Hand: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>,
         };
 
-        const APP_KEY = 'tokikin_v4_8'; // キー変更 (クリーンインストール)
+        const APP_KEY = 'tokikin_v4_9'; // キー変更 (データ分離)
         
         // ---------------------------------------------------------
         //  Data
@@ -133,6 +132,7 @@
         const HEALTH_BENEFITS = [
             { hours: 0, title: "スタート！", text: "体内の一酸化炭素排出が始まります。まずは深呼吸！" },
             { hours: 1, title: "血圧・脈拍の正常化", text: "手足の体温が回復し始めています。リラックスできていますか？" },
+            { hours: 8, title: "酸素濃度回復", text: "血中の酸素濃度が正常値に戻りました！運動が少し楽になるはず。" },
             { hours: 24, title: "心臓発作リスク低下", text: "24時間達成！心臓への負担が減り始めています。すごい！" },
             { hours: 72, title: "ニコチン消失", text: "体内からニコチンが完全に抜けました！ここが一番の踏ん張りどころ！" },
             { hours: 168, title: "睡眠リズムの改善", text: "1週間達成！睡眠の質が良くなり、目覚めがスッキリしてきます。" },
@@ -215,6 +215,7 @@
             const [heroines, setHeroines] = useState([]);
             const [timerData, setTimerData] = useState({ d:0, h:0, m:0, s:0, money:0, totalHours: 0 });
             
+            // モーダル・モード系
             const [isSosMode, setIsSosMode] = useState(false);
             const [sosMessage, setSosMessage] = useState("");
             const [isFullResetMode, setIsFullResetMode] = useState(false);
@@ -223,6 +224,7 @@
             const [giftEvent, setGiftEvent] = useState(null);
             const [tapAnim, setTapAnim] = useState(false);
 
+            // 登録・設定用
             const [regMode, setRegMode] = useState('normal'); 
             const [previewImages, setPreviewImages] = useState({ normal: null, happy: null, sad: null });
 
@@ -236,12 +238,11 @@
                 return list[Math.floor(Math.random() * list.length)];
             };
 
-            // 安全な画像取得のためのメモ化
+            // 安全な画像取得のためのメモ化 (Fix: sadImg is not defined 対応)
             const heroImages = useMemo(() => {
                 const active = heroines.find(h => h.id === profile?.currentHeroineId) || heroines[0];
                 if (!active) return { normal: null, happy: null, sad: null };
                 
-                // 画像データが存在するかチェックして返す
                 return {
                     normal: active.img || null,
                     happy: active.imgHappy || active.img || null,
@@ -408,7 +409,7 @@
                 window.location.reload();
             };
 
-            // 現在表示すべき画像の判定 (エラー対策済み)
+            // 画像表示ロジック (Fix: heroImagesから取得)
             let currentImg = heroImages.normal;
             if (isSosMode) currentImg = heroImages.sad;
             else if (giftEvent || loginBonus) currentImg = heroImages.happy;
@@ -416,14 +417,14 @@
             const currentHealthBenefit = HEALTH_BENEFITS.filter(h => h.hours <= timerData.totalHours).pop() || HEALTH_BENEFITS[0];
             const goalPercent = (profile?.goalCost > 0) ? Math.min(100, (timerData.money / profile.goalCost) * 100) : 0;
 
-            if (gameState === 'loading') return null; // ローディング画面はHTML側で表示済み
+            if (gameState === 'loading') return null;
 
             // --- 1. セットアップ ---
             if (gameState === 'setup') {
                 return (
                     <div className="min-h-screen bg-rose-50 flex items-center justify-center p-6">
                         <form onSubmit={finishSetup} className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm space-y-4 animate-float">
-                            <h1 className="text-xl font-black text-rose-500 text-center mb-4">禁煙メモリアル v4.8</h1>
+                            <h1 className="text-xl font-black text-rose-500 text-center mb-4">禁煙メモリアル v4.9</h1>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="text-xs font-bold text-slate-500">1日の本数</label><input name="c" type="number" defaultValue="20" className="w-full p-2 bg-rose-50 rounded-lg" required /></div>
                                 <div><label className="text-xs font-bold text-slate-500">1箱の値段</label><input name="p" type="number" defaultValue="600" className="w-full p-2 bg-rose-50 rounded-lg" required /></div>
@@ -477,26 +478,24 @@
                 );
             }
 
-            // --- 3. メイン画面 ---
+            // --- 3. メイン画面 (Fix: 縦スクロール対応 & 中央寄せ解除) ---
             return (
+                // 修正: min-h-screenのみにし、flexのcenter寄せを削除して自然なフローレイアウトに
                 <div className="min-h-screen bg-gradient-to-b from-rose-50 to-white pb-32 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-80 bg-rose-100 rounded-b-[60px] -z-10 shadow-inner"></div>
 
-                    {/* ヘッダー: 修正ポイント（pointer-events-noneを削除し、クリック可能に） */}
+                    {/* ヘッダー */}
                     <div className="relative z-[100] flex justify-between items-center p-6 pt-8">
                         <div className="flex items-center gap-2 text-rose-500 font-bold bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">
                             <Icons.Heart className="w-5 h-5" />
                             <span>Lv.{Math.floor((profile.love||0)/100) + 1}</span>
                         </div>
-                        <button 
-                            onClick={() => setIsFullResetMode(true)} 
-                            className="bg-white/90 text-rose-500 text-xs font-bold px-4 py-2 rounded-full shadow-sm border border-rose-100 active:scale-95 transition flex items-center gap-1"
-                        >
+                        <button onClick={() => setIsFullResetMode(true)} className="bg-white/90 text-rose-500 text-xs font-bold px-4 py-2 rounded-full shadow-sm border border-rose-100 active:scale-95 transition flex items-center gap-1">
                             <Icons.Trash className="w-3 h-3"/> データ削除
                         </button>
                     </div>
 
-                    {/* パートナーエリア (メイン画面では通常顔を表示) */}
+                    {/* パートナーエリア */}
                     <div className="relative mx-auto w-72 h-72 mt-2 z-10">
                         <div 
                             onClick={() => { setTapAnim(true); setTimeout(() => setTapAnim(false), 200); setDialogue(getScenario(profile.love)); }}
@@ -527,7 +526,6 @@
                             <div className="text-xs text-slate-400 font-bold">禁煙時間</div>
                             <div className="text-center font-black text-slate-700">
                                 <span className="text-xl">{timerData.d}</span><span className="text-xs">日</span> <span className="text-xl">{timerData.h}</span><span className="text-xs">時間</span>
-                                {/* 分表示 */}
                                 <div className="text-sm text-slate-500 mt-1 flex items-baseline justify-center gap-1">
                                     <span>{timerData.m}<span className="text-xs">分</span></span>
                                     <span className="text-xl text-rose-500 font-mono">{String(timerData.s).padStart(2, '0')}</span><span className="text-xs text-rose-400">秒</span>
@@ -591,7 +589,7 @@
                         </div>
                     </div>
 
-                    {/* 好感度バー (復活) */}
+                    {/* 好感度バー */}
                     <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-100 p-4 pb-8 safe-area-pb z-30">
                         <div className="flex justify-between text-xs font-bold text-slate-400 mb-2">
                             <span>LOVE POINT (Lv.{Math.floor((profile.love||0)/100) + 1})</span>
@@ -619,45 +617,34 @@
                         </div>
                     )}
 
-                    {/* SOSモード (レイアウト刷新: 悲しい顔をメイン表示) */}
+                    {/* SOSモード (Fix: heroImages.sad を参照) */}
                     {isSosMode && (
                         <div className="fixed inset-0 bg-slate-900 z-[500] flex flex-col items-center justify-center text-white overflow-hidden p-6">
-                            {/* 背景はシンプルに黒 */}
                             <button className="absolute top-6 right-6 p-2 bg-white/10 rounded-full z-50" onClick={() => setIsSosMode(false)}><Icons.Check className="w-6 h-6" /></button>
                             
                             <h2 className="text-3xl font-black text-rose-400 mb-6 animate-pulse tracking-widest">EMERGENCY</h2>
 
-                            {/* 悲しい顔をメインに表示 */}
                             <div className="relative w-64 h-64 mb-8">
                                 <div className="w-full h-full rounded-full border-4 border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.3)] overflow-hidden bg-slate-800 relative z-10 animate-breathe">
+                                    {/* 修正: 変数名 sadImg -> heroImages.sad */}
                                     {heroImages.sad ? 
                                         <img src={heroImages.sad} className="w-full h-full object-cover filter grayscale-[30%] brightness-75" /> 
                                         : <div className="w-full h-full flex items-center justify-center text-white/20"><Icons.Camera className="w-12 h-12"/></div>
                                     }
                                 </div>
-                                {/* 涙のようなエフェクト */}
                                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-48 h-4 bg-black/50 blur-xl rounded-full"></div>
                             </div>
 
-                            {/* メッセージエリア */}
                             <div className="w-full max-w-sm text-center space-y-6 relative z-10">
                                 <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                                    <p className="text-lg font-bold animate-fade-in leading-relaxed" key={sosMessage}>
-                                        「{sosMessage}」
-                                    </p>
+                                    <p className="text-lg font-bold animate-fade-in leading-relaxed" key={sosMessage}>「{sosMessage}」</p>
                                 </div>
-                                
                                 <div className="flex gap-4 justify-center mt-4">
-                                    <button onClick={() => setIsSosMode(false)} className="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-bold shadow-lg transition transform active:scale-95">
-                                        我慢する
-                                    </button>
-                                    <button onClick={() => setShowResetConfirm(true)} className="bg-transparent border border-white/20 text-white/40 px-4 py-3 rounded-full text-xs hover:text-white/60 transition">
-                                        もう無理...
-                                    </button>
+                                    <button onClick={() => setIsSosMode(false)} className="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-bold shadow-lg transition transform active:scale-95">我慢する</button>
+                                    <button onClick={() => setShowResetConfirm(true)} className="bg-transparent border border-white/20 text-white/40 px-4 py-3 rounded-full text-xs hover:text-white/60 transition">もう無理...</button>
                                 </div>
                             </div>
 
-                            {/* 吸っちゃった確認 */}
                             {showResetConfirm && (
                                 <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-[600] p-6">
                                     <div className="bg-white text-slate-800 p-6 rounded-2xl w-full max-w-sm text-center space-y-4 shadow-2xl">
@@ -672,38 +659,25 @@
                         </div>
                     )}
 
-                    {/* ギフト/ログボ演出 (ポップアップ内に笑顔を表示) */}
+                    {/* ギフト/ログボ演出 (Fix: heroImages.happy を参照) */}
                     {(giftEvent || loginBonus) && (
                         <div className="fixed inset-0 z-[800] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
                             <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-xs text-center shadow-2xl animate-[bounce_0.5s_ease-out] relative overflow-hidden border-4 border-rose-200">
-                                {/* 背景キラキラ */}
                                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-100 via-transparent to-transparent opacity-50"></div>
-                                
                                 <div className="relative z-10 flex flex-col items-center">
-                                    {/* 笑顔画像を表示！ */}
                                     <div className="w-32 h-32 rounded-full border-4 border-yellow-300 shadow-lg overflow-hidden mb-4 bg-white">
+                                        {/* 修正: 変数名 happyImg -> heroImages.happy */}
                                         {heroImages.happy ? 
                                             <img src={heroImages.happy} className="w-full h-full object-cover" /> 
                                             : <div className="w-full h-full flex items-center justify-center bg-yellow-50 text-yellow-300"><Icons.Smile className="w-10 h-10"/></div>
                                         }
                                     </div>
-
-                                    {/* コンテンツ */}
                                     <div className="text-6xl mb-2 filter drop-shadow-sm">{giftEvent?.icon || "🎉"}</div>
-                                    
                                     {loginBonus && <h3 className="text-2xl font-black text-rose-500 mb-2">{loginBonus.type}</h3>}
-                                    
                                     <div className="bg-rose-50 p-4 rounded-2xl mb-4 w-full">
-                                        <p className="text-slate-700 font-bold whitespace-pre-wrap leading-relaxed text-sm">
-                                            {giftEvent?.msg || loginBonus?.msg}
-                                        </p>
+                                        <p className="text-slate-700 font-bold whitespace-pre-wrap leading-relaxed text-sm">{giftEvent?.msg || loginBonus?.msg}</p>
                                     </div>
-
-                                    {loginBonus && (
-                                        <button onClick={() => setLoginBonus(null)} className="w-full py-3 rounded-xl font-bold bg-slate-800 text-white shadow-lg active:scale-95 transition">
-                                            今日も頑張る！
-                                        </button>
-                                    )}
+                                    {loginBonus && <button onClick={() => setLoginBonus(null)} className="w-full py-3 rounded-xl font-bold bg-slate-800 text-white shadow-lg active:scale-95 transition">今日も頑張る！</button>}
                                 </div>
                             </div>
                         </div>
