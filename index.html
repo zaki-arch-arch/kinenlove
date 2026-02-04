@@ -3,85 +3,62 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>トキメキ禁煙メモリアル v9.0</title>
+<title>トキメキ禁煙メモリアル v10.0</title>
+<!-- Tailwind CSS (デザイン用) -->
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
     /* 基本設定 */
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { 
-        margin: 0; padding: 0; 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
-        background-color: #fff1f2; color: #334155; 
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: #fff1f2; /* rose-50 */
+        color: #334155; /* slate-700 */
+        -webkit-tap-highlight-color: transparent;
         overscroll-behavior-y: none;
         user-select: none;
-        min-height: 100vh;
-        width: 100%;
-        overflow-x: hidden;
+        padding-bottom: 120px;
     }
     
     /* ユーティリティ */
     .hidden { display: none !important; }
-    .container { width: 100%; min-height: 100vh; padding-bottom: 120px; display: flex; flex-direction: column; align-items: center; }
-    
-    /* アニメーション */
-    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-    .animate-breathe { animation: breathe 6s ease-in-out infinite; }
-    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
-    .animate-float { animation: float 5s ease-in-out infinite; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-    @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .animate-pulse-slow { animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-
-    /* コンポーネントスタイル (Tailwindで補えない細かい調整) */
-    .heroine-img { object-fit: cover; width: 100%; height: 100%; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* デバッグログエリア */
-    #debug-console {
-        display: none; /* 通常は非表示 */
-        position: fixed; bottom: 0; left: 0; width: 100%; max-height: 100px;
-        background: rgba(0,0,0,0.8); color: lime; font-size: 10px; font-family: monospace;
-        overflow-y: auto; z-index: 99999; padding: 5px; pointer-events: none;
-    }
+    /* アニメーション */
+    @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+    .animate-breathe { animation: breathe 6s ease-in-out infinite; }
+    
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+    .animate-float { animation: float 4s ease-in-out infinite; }
+
+    @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .animate-pulse-slow { animation: pulse-slow 2s infinite; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 </style>
+<!-- エラーハンドリング -->
 <script>
-    // 簡易デバッグロガー
-    function log(msg) {
-        console.log(msg);
-        var el = document.getElementById('debug-console');
-        if(el) {
-            var p = document.createElement('div');
-            p.innerText = '> ' + msg;
-            el.appendChild(p);
-            el.scrollTop = el.scrollHeight;
-        }
-    }
     window.onerror = function(msg, url, line) {
-        log('ERROR: ' + msg + ' (L:' + line + ')');
-        alert('エラーが発生しました: ' + msg); // ユーザーに通知
-        return false;
+        // エラーが出たらアラートを出す
+        // alert('エラー: ' + msg); 
+        return false; 
     };
 </script>
 </head>
-<body>
-
-    <!-- デバッグ用コンソール -->
-    <div id="debug-console"></div>
+<body class="bg-rose-50 text-slate-700 min-h-screen">
 
     <!-- 1. ロード画面 -->
     <div id="view-loading" class="fixed inset-0 bg-rose-50 flex flex-col items-center justify-center z-[9999]">
         <div class="text-6xl mb-4 animate-bounce">💗</div>
         <div class="font-bold text-rose-400 mb-8">Loading...</div>
-        <button onclick="window.fullReset()" class="px-6 py-3 bg-white border border-slate-300 rounded-full text-xs text-slate-500 shadow-sm active:bg-slate-100">
-            起動しない場合はここをタップ<br>(強制リセット)
+        <button onclick="app.hardReset()" class="px-6 py-3 bg-white border border-slate-300 rounded-full text-xs text-slate-500 shadow-sm active:bg-slate-100">
+            動かない場合はここをタップ<br>(強制初期化)
         </button>
     </div>
 
     <!-- 2. セットアップ画面 -->
     <div id="view-setup" class="hidden min-h-screen flex items-center justify-center p-6">
-        <div class="bg-white p-8 rounded-[2rem] shadow-xl w-full max-w-sm space-y-5 animate-fade-in border-b-4 border-rose-100">
+        <div class="bg-white p-8 rounded-[2rem] shadow-xl w-full max-w-sm space-y-5 animate-float border-b-4 border-rose-100">
             <h1 class="text-xl font-black text-rose-500 text-center flex items-center justify-center gap-2">
                 <span>💖</span> 禁煙メモリアル
             </h1>
@@ -136,14 +113,14 @@
     <!-- 4. メイン画面 -->
     <div id="view-main" class="hidden w-full min-h-screen">
         <!-- 背景装飾 -->
-        <div class="fixed top-0 left-0 w-full h-80 bg-rose-100 rounded-b-[60px] -z-10"></div>
+        <div class="fixed top-0 left-0 w-full h-80 bg-rose-100 rounded-b-[60px] -z-10 shadow-inner"></div>
 
         <!-- ヘッダー -->
         <div class="flex justify-between items-center p-6 pt-10 sticky top-0 z-40 bg-rose-100/80 backdrop-blur-sm rounded-b-2xl">
             <div class="flex items-center gap-2 text-rose-500 font-bold bg-white/90 px-4 py-1.5 rounded-full shadow-sm border border-white">
                 <span>❤️</span> <span id="disp-lv">Lv.1</span>
             </div>
-            <button onclick="window.fullReset()" class="bg-white/90 text-slate-400 text-xs font-bold px-3 py-2 rounded-full shadow-sm border border-white active:scale-95 transition flex items-center gap-1">
+            <button onclick="app.openResetModal()" class="bg-white/90 text-slate-400 text-xs font-bold px-3 py-2 rounded-full shadow-sm border border-white active:scale-95 transition flex items-center gap-1">
                 🗑️ データ削除
             </button>
         </div>
@@ -151,7 +128,7 @@
         <!-- パートナーエリア -->
         <div class="flex flex-col items-center mt-4 z-10">
             <div onclick="app.tapHeroine()" class="w-72 h-72 rounded-full border-[8px] border-white shadow-xl overflow-hidden bg-slate-100 animate-breathe relative cursor-pointer active:scale-95 transition-transform">
-                <img id="main-heroine-img" class="heroine-img">
+                <img id="main-heroine-img" class="w-full h-full object-cover">
             </div>
             
             <div class="relative mt-[-25px] z-20 w-[85%] max-w-sm">
@@ -165,16 +142,16 @@
         <!-- ステータスエリア -->
         <div class="mt-8 px-6 grid grid-cols-2 gap-4">
             <!-- 禁煙時間 -->
-            <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-50 flex flex-col items-center justify-center h-36">
+            <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-50 flex flex-col items-center justify-center h-36 text-center">
                 <div class="text-slate-300 mb-1 text-xl">⏰</div>
                 <div class="text-[10px] text-slate-400 font-bold mb-1">禁煙時間</div>
-                <div class="text-center font-black text-slate-700 leading-tight">
+                <div class="font-black text-slate-700 leading-tight">
                     <div><span id="timer-d" class="text-xl">0</span><span class="text-xs">日</span> <span id="timer-h" class="text-xl">0</span><span class="text-xs">時間</span></div>
                     <div class="mt-1"><span id="timer-m" class="text-lg">0</span><span class="text-xs">分</span> <span id="timer-s" class="text-lg text-rose-500 font-mono">00</span><span class="text-xs">秒</span></div>
                 </div>
             </div>
             <!-- 累計節約 -->
-            <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-50 flex flex-col items-center justify-between h-36">
+            <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-50 flex flex-col items-center justify-between h-36 text-center">
                 <div class="flex flex-col items-center w-full">
                     <div class="text-rose-300 mb-1 text-xl">🐖</div>
                     <div class="text-[10px] text-slate-400 font-bold mb-1">累計節約</div>
@@ -228,51 +205,46 @@
                 <div id="love-bar" class="h-full bg-gradient-to-r from-rose-300 to-rose-500 transition-all duration-1000" style="width:0%"></div>
             </div>
         </div>
+    </div>
 
-        <!-- モーダル: SOS -->
-        <div id="modal-sos" class="hidden fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center text-white p-6">
-            <button onclick="app.closeSos()" class="absolute top-6 right-6 p-2 bg-white/10 rounded-full z-50">✕</button>
-            <h2 class="text-3xl font-black text-rose-400 mb-8 animate-pulse tracking-widest mt-10">EMERGENCY</h2>
-            <div class="relative w-64 h-64 mb-8">
-                <div class="w-full h-full rounded-full border-4 border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.3)] overflow-hidden bg-slate-800 relative z-10 animate-breathe">
-                    <img id="sos-img" class="w-full h-full object-cover filter grayscale-[30%] brightness-75">
-                </div>
+    <!-- モーダル: SOS -->
+    <div id="modal-sos" class="hidden fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center text-white p-6 animate-fade-in">
+        <button onclick="app.closeSos()" class="absolute top-6 right-6 p-2 bg-white/10 rounded-full z-50">✕</button>
+        <h2 class="text-3xl font-black text-rose-400 mb-8 animate-pulse tracking-widest mt-10">EMERGENCY</h2>
+        <div class="relative w-64 h-64 mb-8">
+            <div class="w-full h-full rounded-full border-4 border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.3)] overflow-hidden bg-slate-800 relative z-10 animate-breathe">
+                <img id="sos-img" class="w-full h-full object-cover filter grayscale-[30%] brightness-75">
             </div>
-            <div class="w-full max-w-sm text-center space-y-6 relative z-10">
-                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                    <p id="sos-msg" class="text-lg font-bold leading-relaxed">「ダメ！吸ったら悲しいよ？」</p>
-                </div>
-                <div class="flex gap-4 justify-center mt-4">
-                    <button onclick="app.closeSos()" class="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 transition">我慢する</button>
-                    <button onclick="app.execPenalty()" class="bg-transparent border border-white/20 text-white/40 px-4 py-3 rounded-full text-xs active:bg-white/10">吸う(ペナルティ)</button>
-                </div>
+        </div>
+        <div class="w-full max-w-sm text-center space-y-6 relative z-10">
+            <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
+                <p id="sos-msg" class="text-lg font-bold leading-relaxed">「ダメ！吸ったら悲しいよ？」</p>
+            </div>
+            <div class="flex gap-4 justify-center mt-4">
+                <button onclick="app.closeSos()" class="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 transition">我慢する</button>
+                <button onclick="app.execPenalty()" class="bg-transparent border border-white/20 text-white/40 px-4 py-3 rounded-full text-xs active:bg-white/10">吸う(ペナルティ)</button>
             </div>
         </div>
     </div>
 
-    <!-- 【緊急】リセット機能 (独立) -->
-    <script>
-        window.fullReset = function() {
-            if(confirm('【修復】データを全て削除して初期化しますか？')) {
-                try {
-                    localStorage.clear();
-                    alert('削除しました。リロードします。');
-                    location.reload();
-                } catch(e) {
-                    alert('削除失敗: ' + e);
-                }
-            }
-        };
-    </script>
+    <!-- モーダル: リセット -->
+    <div id="modal-reset" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl">
+            <div class="text-4xl mb-4">🗑️</div>
+            <h3 class="text-xl font-black text-slate-800 mb-2">データを削除しますか？</h3>
+            <p class="text-sm text-slate-500 mb-6 leading-relaxed">これまでの記録、パートナーとの思い出が<br/>すべて消えてしまいます。</p>
+            <div class="flex gap-3">
+                <button onclick="app.closeResetModal()" class="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-600">キャンセル</button>
+                <button onclick="app.hardReset()" class="flex-1 py-3 rounded-xl font-bold bg-rose-500 text-white shadow-lg">削除する</button>
+            </div>
+        </div>
+    </div>
 
     <script>
     // --- アプリのコアロジック (Vanilla JS) ---
     (function() {
-        var APP_KEY = 'tokikin_v9_0';
+        var APP_KEY = 'tokikin_v10_0';
         
-        // メモリ保存用 (localStorageが使えない場合用)
-        var memStorage = {};
-
         var DATA = {
             profile: null,
             heroines: [],
@@ -297,23 +269,23 @@
             "深呼吸して。私がついてるから。", "その1本、本当に必要？"
         ];
 
-        // --- Helper ---
+        // ------------------------------------------------------------
+        //  DOM操作ヘルパー
+        // ------------------------------------------------------------
         function get(id) { return document.getElementById(id); }
         function show(id) { get(id).classList.remove('hidden'); }
         function hide(id) { get(id).classList.add('hidden'); }
         function setText(id, txt) { var el = get(id); if(el) el.innerText = txt; }
         
-        // --- Storage (Safety First) ---
+        // ------------------------------------------------------------
+        //  データ管理
+        // ------------------------------------------------------------
         function save() {
             try {
                 localStorage.setItem(APP_KEY + '_profile', JSON.stringify(DATA.profile));
                 localStorage.setItem(APP_KEY + '_heroines', JSON.stringify(DATA.heroines));
                 return true;
-            } catch(e) { 
-                log('Storage Access Error: ' + e.message);
-                // エラーでもメモリには残っているのでtrueを返す（進めるようにする）
-                return true; 
-            }
+            } catch(e) { alert('保存容量がいっぱいです'); return false; }
         }
 
         function load() {
@@ -325,13 +297,13 @@
                     DATA.heroines = JSON.parse(h);
                     return true;
                 }
-            } catch(e) {
-                log('Load Error: ' + e.message);
-            }
+            } catch(e) {}
             return false;
         }
 
-        // --- Image ---
+        // ------------------------------------------------------------
+        //  画像処理
+        // ------------------------------------------------------------
         function resizeImage(file, callback) {
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -351,10 +323,11 @@
             reader.readAsDataURL(file);
         }
 
-        // --- App Object ---
+        // ------------------------------------------------------------
+        //  アプリ機能 (Global公開)
+        // ------------------------------------------------------------
         window.app = {
             init: function() {
-                log('App initializing...');
                 if (load() && DATA.profile.startQuitDate) {
                     this.switchView('main');
                     this.initMain();
@@ -366,7 +339,6 @@
             },
 
             switchView: function(viewName) {
-                hide('view-loading');
                 hide('view-setup');
                 hide('view-char');
                 hide('view-main');
@@ -400,4 +372,14 @@
                 if (img) {
                     imgEl.src = img;
                     show('preview-img');
-               
+                    hide('preview-placeholder');
+                } else {
+                    hide('preview-img');
+                    show('preview-placeholder');
+                }
+            },
+
+            handleFile: function(input) {
+                if (input.files && input.files[0]) {
+                    resizeImage(input.files[0], function(base64) {
+                        DA
