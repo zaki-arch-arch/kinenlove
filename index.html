@@ -2,111 +2,37 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>トキメキ禁煙メモリアル v6.1</title>
-    
-    <!-- エラーハンドリング -->
-    <script>
-        window.onerror = function(msg, url, line, col, error) {
-            var root = document.getElementById('root');
-            if (root) {
-                // エラー内容を表示（Script errorの場合はヒントを表示）
-                var displayMsg = msg;
-                if (msg.indexOf('Script error') > -1) {
-                    displayMsg = 'プログラムの読み込みに失敗しました。<br>ブラウザの再読み込みをお試しください。';
-                }
-                
-                root.innerHTML = '<div style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; color:red; padding:20px; z-index:9999; font-family:sans-serif;">' +
-                    '<h3>⚠️ エラーが発生しました</h3>' +
-                    '<p style="margin:10px 0; font-weight:bold;">' + displayMsg + '</p>' +
-                    '<p>Line: ' + line + '</p>' +
-                    '<button onclick="localStorage.clear();location.reload();" style="margin-top:20px; padding:12px 24px; background:#333; color:white; border:none; border-radius:5px;">データを削除して復旧</button>' +
-                    '</div>';
-            }
-            return false;
-        };
-    </script>
-
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>トキメキ禁煙メモリアル Final</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM (unpkg, crossorigin属性付き) -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel (unpkg) -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%; /* vhではなく%を使う */
-            background-color: #fff1f2;
-            color: #334155;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            overflow: hidden; /* React側でスクロール制御 */
-        }
-        
-        #root {
-            width: 100%;
-            height: 100%;
-            overflow-y: auto; /* ここでスクロール */
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* アニメーション */
-        @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        body { font-family: sans-serif; background-color: #fff1f2; color: #334155; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
         .animate-breathe { animation: breathe 6s ease-in-out infinite; }
-        
-        @keyframes tap { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
+        @keyframes tap { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95); } }
         .animate-tap { animation: tap 0.2s ease-in-out; }
-
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-        .animate-float { animation: float 4s ease-in-out infinite; }
-
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+        .animate-float { animation: float 5s ease-in-out infinite; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
     </style>
 </head>
 <body>
-    <div id="root">
-        <!-- 初期ローディング画面 -->
-        <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fb7185;">
-            <div style="font-size: 3rem; margin-bottom: 1rem; animation: bounce 1s infinite;">💗</div>
-            <div style="font-weight: bold;">Loading...</div>
-        </div>
-    </div>
+    <div id="app" class="w-full min-h-screen relative overflow-hidden"></div>
 
-    <!-- アプリケーションロジック -->
-    <script type="text/babel">
-        // Reactチェック
-        if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
-            throw new Error("Reactライブラリの読み込みに失敗しました。");
-        }
-
-        const { useState, useEffect, useMemo } = React;
-
-        // --- Icons ---
-        const Icons = {
-            Heart: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>,
-            Alert: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
-            Clock: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-            Wallet: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z"/></svg>,
-            Camera: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
-            Check: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-            Activity: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
-            Trash: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
-            Star: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-            Smile: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
-            Piggy: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 5c-1.5 0-2.8.6-3.8 1.5l-2.5 2.5c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L11.6 3c.6-.6 1.5-.6 2.1 0l.4.4"/><path d="M2 15c0 3.9 3.1 7 7 7 2.4 0 4.5-1.2 5.8-3l.5.5c.8.8 2.1.8 2.8 0l2.8-2.8c.8-.8.8-2.1 0-2.8l-.5-.5c1.8-1.3 3-3.4 3-5.8 0-2.2-1-4.2-2.6-5.6l-3.3 3.3c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L16.4 2c-1.4-1.6-3.4-2.6-5.6-2.6-3.9 0-7 3.1-7 7v.5C2 7.8 2 8.9 2 10z"/><path d="M9 13v.01"/><path d="M15 9v.01"/></svg>,
-        };
-
-        const APP_KEY = 'tokikin_v6_1'; // キー変更
+    <script>
+        // --- 設定・データ ---
+        const APP_KEY = 'tokikin_final_v1';
         
-        // --- Data ---
+        const GIFTS = [
+            { id: 1, name: 'コンビニスイーツ', cost: 500, icon: '🍰', love: 15 },
+            { id: 2, name: '新作コスメ', cost: 3000, icon: '💄', love: 80 },
+            { id: 3, name: '温泉旅行', cost: 15000, icon: '♨️', love: 450 },
+            { id: 4, name: '愛の誓い', cost: 100000, icon: '💍', love: 2500 },
+        ];
+
         const SCENARIO_DB = {
             stage1: {
                 morning: ["おはよう！今日も一日、肺をキレイに保とうね！", "朝一番の深呼吸、気持ちいいでしょ？", "今日も禁煙記録、更新できそうかな？応援してるよ！"],
@@ -128,13 +54,6 @@
             }
         };
 
-        const GIFTS = [
-            { id: 1, name: 'コンビニスイーツ', cost: 500, love: 15, icon: '🍰' },
-            { id: 2, name: '新作コスメ', cost: 3000, love: 80, icon: '💄' },
-            { id: 3, name: '温泉旅行', cost: 15000, love: 450, icon: '♨️' },
-            { id: 4, name: '愛の誓い', cost: 100000, love: 2500, icon: '💍' },
-        ];
-
         const HEALTH_BENEFITS = [
             { hours: 0, title: "スタート！", text: "まずは深呼吸！体内の一酸化炭素排出が始まります。" },
             { hours: 24, title: "心臓発作リスク低下", text: "24時間達成！心臓への負担が減り始めています。" },
@@ -144,59 +63,140 @@
             { hours: 8760, title: "心臓病リスク半減", text: "1年達成！心臓疾患のリスクが喫煙者の半分になりました！" }
         ];
 
-        const SOS_MESSAGES = [
-            "ダメ！ここで吸ったら、私のこの笑顔も見納めだよ？",
-            "私のために、その一本を我慢して？…お願い。",
-            "深呼吸して。私が手、握っててあげるから。",
-            "あなたが健康を害するのが、私にとって一番の痛みなんだよ。"
-        ];
-
         const OMIKUJI_DATA = [
-            { id: 1, type: '大吉', love: 50, msg: '今日は最高の禁煙日和！何か良いことあるかも！' },
-            { id: 2, type: '中吉', love: 30, msg: '深呼吸で運気アップ！肺が喜んでるよ。' },
-            { id: 3, type: '小吉', love: 20, msg: '地道な努力が実を結ぶ日。コツコツいこう。' },
+            { type: '大吉', love: 50, msg: '今日は最高の禁煙日和！何か良いことあるかも！' },
+            { type: '中吉', love: 30, msg: '深呼吸で運気アップ！肺が喜んでるよ。' },
+            { type: '小吉', love: 20, msg: '地道な努力が実を結ぶ日。コツコツいこう。' },
         ];
 
-        // --- Utils (安全な記述に変更) ---
-        const Storage = {
-            get: function(key, def) {
-                try {
-                    var v = localStorage.getItem(APP_KEY + '_' + key);
-                    return v ? JSON.parse(v) : def;
-                } catch(e) { return def; }
-            },
-            set: function(key, val) {
-                try {
-                    localStorage.setItem(APP_KEY + '_' + key, JSON.stringify(val));
-                    return true;
-                } catch(e) {
-                    if (e.name === 'QuotaExceededError') {
-                        alert("容量不足で保存できません。画像を減らしてください。");
-                    }
-                    return false;
-                }
-            },
-            clear: function() {
-                try {
-                    Object.keys(localStorage).forEach(function(k) {
-                        if(k.indexOf(APP_KEY) === 0) localStorage.removeItem(k);
-                    });
-                } catch(e) {}
-            }
+        // --- 状態管理 (Vanilla JS State) ---
+        const state = {
+            gameState: 'loading', // loading, setup, char_reg, main
+            profile: null,
+            heroines: [],
+            isSosMode: false,
+            isFullResetMode: false,
+            showResetConfirm: false,
+            popup: null, // { title, msg, icon, onClose }
+            
+            // 入力用一時データ
+            regMode: 'normal',
+            previewImages: { normal: null, happy: null, sad: null },
+            
+            // タイマーデータ
+            timer: { d:0, h:0, m:0, s:0, wallet:0, totalSaved:0, totalHours:0 },
+            
+            // UI用
+            dialogue: "",
+            tapAnim: false
         };
 
-        const resizeImage = function(file) {
-            return new Promise(function(resolve) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var img = new Image();
-                    img.onload = function() {
-                        var canvas = document.createElement('canvas');
-                        var w = img.width; var h = img.height;
-                        var max = 600; 
-                        if(w > h) { if(w > max) { h *= max/w; w=max; } } else { if(h > max) { w *= max/h; h=max; } }
+        // --- 保存/読込 ---
+        function loadData() {
+            try {
+                const p = localStorage.getItem(APP_KEY + '_profile');
+                const h = localStorage.getItem(APP_KEY + '_heroines');
+                if (p && h) {
+                    state.profile = JSON.parse(p);
+                    state.heroines = JSON.parse(h);
+                    return true;
+                }
+            } catch(e) { console.error(e); }
+            return false;
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(APP_KEY + '_profile', JSON.stringify(state.profile));
+                localStorage.setItem(APP_KEY + '_heroines', JSON.stringify(state.heroines));
+            } catch(e) { alert("保存容量がいっぱいです。画像を減らしてください。"); }
+        }
+
+        function clearData() {
+            Object.keys(localStorage).forEach(k => {
+                if(k.startsWith(APP_KEY)) localStorage.removeItem(k);
+            });
+            location.reload();
+        }
+
+        // --- ロジック ---
+        function init() {
+            if (loadData() && state.profile.startQuitDate) {
+                state.gameState = 'main';
+                updateDialogue();
+                checkLoginBonus();
+            } else {
+                state.profile = { dailyTarget: 20, pricePerPack: 600, money: 0, love: 0, goalName: '', goalCost: 0, lastLoginDate: null, giftHistory: {} };
+                state.gameState = 'setup';
+            }
+            startTimer();
+            render();
+        }
+
+        function updateDialogue() {
+            if (!state.profile) return;
+            const h = new Date().getHours();
+            let timeKey = (h >= 5 && h < 11) ? 'morning' : (h >= 11 && h < 18) ? 'day' : (h >= 23 || h < 4) ? 'lateNight' : 'night';
+            let stage = state.profile.love >= 500 ? 'stage3' : state.profile.love >= 100 ? 'stage2' : 'stage1';
+            const list = SCENARIO_DB[stage][timeKey];
+            state.dialogue = list[Math.floor(Math.random() * list.length)];
+        }
+
+        function checkLoginBonus() {
+            const today = new Date().toDateString();
+            if (state.profile.lastLoginDate !== today) {
+                const omikuji = OMIKUJI_DATA[Math.floor(Math.random() * OMIKUJI_DATA.length)];
+                state.profile.love += omikuji.love;
+                state.profile.lastLoginDate = today;
+                saveData();
+                setTimeout(() => {
+                    state.popup = {
+                        title: omikuji.type,
+                        msg: omikuji.msg,
+                        icon: '🎉',
+                        subMsg: `好感度 +${omikuji.love}`,
+                        onClose: () => { state.popup = null; render(); }
+                    };
+                    render();
+                }, 1000);
+            }
+        }
+
+        function startTimer() {
+            setInterval(() => {
+                if (!state.profile || !state.profile.startQuitDate) return;
+                const now = new Date();
+                const start = new Date(state.profile.startQuitDate);
+                const diffMs = now - start;
+                if (diffMs < 0) return;
+
+                const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((diffMs / (1000 * 60)) % 60);
+                const s = Math.floor((diffMs / 1000) % 60);
+                
+                const totalHours = diffMs / (1000 * 60 * 60);
+                const totalDaysFloat = diffMs / (1000 * 60 * 60 * 24);
+                const totalSaved = Math.floor(totalDaysFloat * state.profile.dailyTarget * (state.profile.pricePerPack / 20));
+                const wallet = (state.profile.accumulatedMoney || 0) + totalSaved;
+
+                state.timer = { d, h, m, s, wallet, totalSaved, totalHours };
+                if (state.gameState === 'main') renderTimerOnly(); // 部分更新
+            }, 1000);
+        }
+
+        function resizeImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        const max = 600;
+                        if (w > h) { if (w > max) { h *= max / w; w = max; } } else { if (h > max) { w *= max / h; h = max; } }
                         canvas.width = w; canvas.height = h;
-                        var ctx = canvas.getContext('2d');
+                        const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, w, h);
                         resolve(canvas.toDataURL('image/jpeg', 0.7));
                     };
@@ -204,178 +204,167 @@
                 };
                 reader.readAsDataURL(file);
             });
-        };
+        }
 
-        // --- Components ---
-        function App() {
-            const [gameState, setGameState] = useState('loading');
-            const [profile, setProfile] = useState(null);
-            const [heroines, setHeroines] = useState([]);
-            const [timerData, setTimerData] = useState({ d:0, h:0, m:0, s:0, wallet:0, totalSaved:0, totalHours: 0 });
-            
-            const [isSosMode, setIsSosMode] = useState(false);
-            const [sosMessage, setSosMessage] = useState("");
-            const [isFullResetMode, setIsFullResetMode] = useState(false);
-            const [showResetConfirm, setShowResetConfirm] = useState(false);
-            const [loginBonus, setLoginBonus] = useState(null);
-            const [giftEvent, setGiftEvent] = useState(null);
-            const [tapAnim, setTapAnim] = useState(false);
+        // --- レンダリング (View) ---
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = ''; // Clear
 
-            const [regMode, setRegMode] = useState('normal'); 
-            const [previewImages, setPreviewImages] = useState({ normal: null, happy: null, sad: null });
-            const [dialogue, setDialogue] = useState("");
+            if (state.gameState === 'loading') {
+                app.innerHTML = `
+                    <div class="h-screen flex flex-col items-center justify-center text-rose-400">
+                        <div class="text-4xl mb-4 animate-bounce">💗</div>
+                        <div class="font-bold">Loading...</div>
+                        <button onclick="clearData()" class="mt-8 text-xs text-gray-400 underline">起動しない場合はリセット</button>
+                    </div>`;
+                return;
+            }
 
-            // 初期化
-            useEffect(function() {
-                const p = Storage.get('profile', null);
-                const h = Storage.get('heroines', []);
-                if (p && p.startQuitDate) {
-                    setProfile(p);
-                    setHeroines(h);
-                    setGameState('main');
-                } else {
-                    setProfile({ dailyTarget: 20, pricePerPack: 600, money: 0, love: 0, goalName: '', goalCost: 0, lastLoginDate: null, giftHistory: {} });
-                    setGameState('setup');
-                }
-            }, []);
+            if (state.gameState === 'setup') {
+                app.innerHTML = `
+                    <div class="min-h-screen flex items-center justify-center p-6 bg-rose-50">
+                        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm space-y-4 animate-float">
+                            <h1 class="text-xl font-black text-rose-500 text-center mb-4">禁煙メモリアル Final</h1>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="text-xs font-bold text-slate-500">1日の本数</label><input id="inp-c" type="number" value="20" class="w-full p-2 bg-rose-50 rounded-lg"></div>
+                                <div><label class="text-xs font-bold text-slate-500">1箱の値段</label><input id="inp-p" type="number" value="600" class="w-full p-2 bg-rose-50 rounded-lg"></div>
+                            </div>
+                            <div class="pt-2 border-t border-rose-100">
+                                <p class="text-xs font-bold text-rose-400 mb-2">✨ 目標（欲しいもの）</p>
+                                <input id="inp-gn" type="text" placeholder="例: 焼肉..." class="w-full p-2 bg-rose-50 rounded-lg mb-2">
+                                <input id="inp-gc" type="number" placeholder="金額 (円)" class="w-full p-2 bg-rose-50 rounded-lg">
+                            </div>
+                            <button id="btn-next" class="w-full bg-rose-500 text-white py-4 rounded-full font-bold shadow-lg mt-2">次へ</button>
+                        </div>
+                    </div>`;
+                document.getElementById('btn-next').onclick = () => {
+                    state.profile.dailyTarget = parseInt(document.getElementById('inp-c').value);
+                    state.profile.pricePerPack = parseInt(document.getElementById('inp-p').value);
+                    state.profile.goalName = document.getElementById('inp-gn').value;
+                    state.profile.goalCost = parseInt(document.getElementById('inp-gc').value) || 0;
+                    state.gameState = 'char_reg';
+                    render();
+                };
+                return;
+            }
 
-            // シナリオ
-            const getScenario = function(love) {
-                const safeLove = love || 0;
-                const h = new Date().getHours();
-                let timeKey = (h >= 5 && h < 11) ? 'morning' : (h >= 11 && h < 18) ? 'day' : (h >= 23 || h < 4) ? 'lateNight' : 'night';
-                let stage = safeLove >= 500 ? 'stage3' : safeLove >= 100 ? 'stage2' : 'stage1';
-                const list = SCENARIO_DB[stage][timeKey];
-                return list[Math.floor(Math.random() * list.length)];
-            };
-
-            useEffect(function() {
-                if (gameState === 'main' && profile) {
-                    setDialogue(getScenario(profile.love));
-                }
-            }, [gameState]); 
-
-            // タイマー & 計算ロジック
-            useEffect(function() {
-                if(!profile || !profile.startQuitDate) return;
+            if (state.gameState === 'char_reg') {
+                const currentPrev = state.previewImages[state.regMode];
+                app.innerHTML = `
+                    <div class="min-h-screen flex flex-col items-center justify-center p-6 bg-rose-50">
+                        <h2 class="text-xl font-bold text-slate-700 mb-4">パートナー設定</h2>
+                        <div class="flex bg-white rounded-full p-1 shadow-sm mb-4 w-full max-w-xs" id="mode-tabs"></div>
+                        <div class="relative w-64 h-64 bg-white border-4 border-dashed rounded-3xl flex items-center justify-center overflow-hidden shadow-sm mb-6" style="border-color:${state.regMode === 'normal' ? '#fda4af' : state.regMode === 'happy' ? '#facc15' : '#3b82f6'}">
+                            ${currentPrev ? `<img src="${currentPrev}" class="w-full h-full object-cover">` : `<div class="text-center p-4 text-slate-300"><span class="text-4xl">📷</span><br><span class="text-xs font-bold">画像を選択</span></div>`}
+                            <input type="file" accept="image/*" id="file-input" class="absolute inset-0 opacity-0 cursor-pointer">
+                        </div>
+                        <button id="btn-start" class="px-10 py-3 rounded-full font-bold shadow-lg ${state.previewImages.normal ? 'bg-rose-500 text-white' : 'bg-gray-300 text-gray-500'}">これで始める</button>
+                    </div>`;
                 
-                const todayStr = new Date().toDateString();
-                if (profile.lastLoginDate !== todayStr && gameState === 'main') {
-                    const omikuji = OMIKUJI_DATA[Math.floor(Math.random() * OMIKUJI_DATA.length)];
-                    const newLove = (profile.love || 0) + omikuji.love;
-                    const newProfile = { ...profile, love: newLove, lastLoginDate: todayStr };
-                    setProfile(newProfile);
-                    Storage.set('profile', newProfile);
-                    setTimeout(function() { setLoginBonus(omikuji); }, 1500);
-                }
-
-                const tick = function() {
-                    const now = new Date();
-                    const start = new Date(profile.startQuitDate);
-                    const diffMs = now - start;
-                    if(diffMs < 0) return;
-
-                    const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    const h = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-                    const m = Math.floor((diffMs / (1000 * 60)) % 60);
-                    const s = Math.floor((diffMs / 1000) % 60);
-                    const totalHours = diffMs / (1000 * 60 * 60);
-                    
-                    const totalDaysFloat = diffMs / (1000 * 60 * 60 * 24);
-                    const totalSaved = Math.floor(totalDaysFloat * profile.dailyTarget * (profile.pricePerPack / 20));
-                    const wallet = (profile.accumulatedMoney || 0) + totalSaved;
-
-                    setTimerData({ d: d, h: h, m: m, s: s, wallet: wallet, totalSaved: totalSaved, totalHours: totalHours });
-                };
-                tick();
-                const interval = setInterval(tick, 1000);
-                return function() { clearInterval(interval); };
-            }, [profile, gameState]);
-
-            useEffect(function() {
-                if (isSosMode) {
-                    const updateMsg = function() { setSosMessage(SOS_MESSAGES[Math.floor(Math.random() * SOS_MESSAGES.length)]); };
-                    updateMsg();
-                    const interval = setInterval(updateMsg, 6000);
-                    return function() { clearInterval(interval); };
-                }
-            }, [isSosMode]);
-
-            // 画像処理 (安全に取得)
-            const heroImages = useMemo(function() {
-                if (!profile || !profile.currentHeroineId) return { normal: null, happy: null, sad: null };
-                const active = heroines.find(function(h) { return h.id === profile.currentHeroineId; }) || heroines[0];
-                if (!active) return { normal: null, happy: null, sad: null };
-                return {
-                    normal: active.img || null,
-                    happy: active.imgHappy || active.img || null,
-                    sad: active.imgSad || active.img || null
-                };
-            }, [heroines, profile]);
-
-            const handleImageSelect = async function(e, type) {
-                if (e.target.files && e.target.files[0]) {
-                    try {
-                        const base64 = await resizeImage(e.target.files[0]);
-                        setPreviewImages(function(prev) {
-                            return { ...prev, [type]: base64 };
-                        });
-                    } catch (err) { alert("画像の読み込みに失敗しました"); }
-                }
-            };
-
-            const registerHeroine = function() {
-                if (!previewImages.normal) return alert("通常画像は必須です！");
-                
-                const newHeroine = { 
-                    id: Date.now().toString(), 
-                    img: previewImages.normal, 
-                    imgHappy: previewImages.happy || previewImages.normal,
-                    imgSad: previewImages.sad || previewImages.normal,
-                    createdAt: new Date().toISOString() 
-                };
-                const newHeroines = [newHeroine, ...heroines];
-                const newProfile = { 
-                    ...profile, 
-                    startQuitDate: profile.startQuitDate || new Date().toISOString(), 
-                    currentHeroineId: newHeroine.id 
-                };
-
-                if (!Storage.set('heroines', newHeroines) || !Storage.set('profile', newProfile)) return;
-
-                setHeroines(newHeroines);
-                setProfile(newProfile);
-                setGameState('main');
-            };
-
-            const finishSetup = function(e) {
-                e.preventDefault();
-                const f = new FormData(e.target);
-                setProfile({ 
-                    ...profile, 
-                    dailyTarget: parseInt(f.get('c')), 
-                    pricePerPack: parseInt(f.get('p')),
-                    goalName: f.get('goalName'),
-                    goalCost: parseInt(f.get('goalCost')) || 0,
-                    giftHistory: {}
+                // Tabs
+                const tabs = document.getElementById('mode-tabs');
+                ['normal', 'happy', 'sad'].forEach(m => {
+                    const btn = document.createElement('button');
+                    btn.className = `flex-1 py-2 text-xs font-bold rounded-full transition-colors ${state.regMode === m ? 'bg-rose-500 text-white' : 'text-slate-400'}`;
+                    btn.innerText = m === 'normal' ? '通常' : m === 'happy' ? '笑顔' : '悲しみ';
+                    btn.onclick = () => { state.regMode = m; render(); };
+                    tabs.appendChild(btn);
                 });
-                setGameState('char_reg');
-            };
 
-            const giveGift = function(gift) {
-                if (timerData.wallet < gift.cost) return alert("お金が足りません！");
-                
-                const newLove = (profile.love || 0) + gift.love;
-                const newAccumulated = (profile.accumulatedMoney || 0) - gift.cost;
-                
-                const history = profile.giftHistory || {};
-                const newCount = (history[gift.id] || 0) + 1;
-                const newHistory = { ...history, [gift.id]: newCount };
-
-                const newProfile = { 
-                    ...profile, 
-                    accumulatedMoney: newAccumulated, 
-                    love: newLove,
-                    giftHistory: newHistory
+                document.getElementById('file-input').onchange = async (e) => {
+                    if (e.target.files[0]) {
+                        state.previewImages[state.regMode] = await resizeImage(e.target.files[0]);
+                        render();
+                    }
                 };
-        
+                document.getElementById('btn-start').onclick = () => {
+                    if (!state.previewImages.normal) return alert("通常画像は必須です");
+                    const newHeroine = { 
+                        id: Date.now().toString(), 
+                        img: state.previewImages.normal, 
+                        imgHappy: state.previewImages.happy || state.previewImages.normal, 
+                        imgSad: state.previewImages.sad || state.previewImages.normal 
+                    };
+                    state.heroines = [newHeroine];
+                    state.profile.currentHeroineId = newHeroine.id;
+                    state.profile.startQuitDate = new Date().toISOString();
+                    saveData();
+                    state.gameState = 'main';
+                    updateDialogue();
+                    render();
+                };
+                return;
+            }
+
+            if (state.gameState === 'main') {
+                renderMain(app);
+            }
+        }
+
+        // メイン画面の描画（頻繁な更新用）
+        function renderMain(container) {
+            const h = state.heroines[0];
+            let img = h.img;
+            if (state.isSosMode) img = h.imgSad;
+            else if (state.popup) img = h.imgHappy;
+
+            // HTML構築
+            container.innerHTML = `
+                <div class="w-full bg-gradient-to-b from-rose-50 to-white pb-32 min-h-screen relative">
+                    <div class="fixed top-0 left-0 w-full h-80 bg-rose-100 rounded-b-[60px] -z-10 shadow-inner"></div>
+                    
+                    <!-- Header -->
+                    <div class="flex justify-between items-center p-6 pt-10 sticky top-0 z-40 bg-rose-100/80 backdrop-blur-sm rounded-b-2xl">
+                        <div class="flex items-center gap-2 text-rose-500 font-bold bg-white/90 px-3 py-1 rounded-full shadow-sm">
+                            <span>❤️</span><span>Lv.${Math.floor(state.profile.love/100) + 1}</span>
+                        </div>
+                        <button onclick="toggleResetModal()" class="bg-white/90 text-rose-500 text-xs font-bold px-4 py-2 rounded-full shadow-sm flex items-center gap-1">🗑️ データ削除</button>
+                    </div>
+
+                    <!-- Partner -->
+                    <div class="flex flex-col items-center mt-4 z-10">
+                        <div onclick="tapHeroine()" class="w-72 h-72 rounded-full border-[6px] border-white shadow-xl overflow-hidden bg-white animate-breathe relative cursor-pointer active:scale-95 transition-transform">
+                            <img src="${img}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="relative mt-[-20px] z-20 w-72">
+                            <div class="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-rose-100 text-center animate-float">
+                                <p class="text-sm font-bold text-slate-700 leading-relaxed whitespace-pre-wrap">${state.dialogue}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timer (id付きで後から中身だけ更新可能に) -->
+                    <div id="timer-area" class="mt-8 px-6 grid grid-cols-2 gap-4"></div>
+
+                    <!-- Health -->
+                    <div class="mt-4 px-6">
+                        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-5 rounded-3xl border border-emerald-100 flex gap-4 items-start shadow-sm">
+                            <div class="bg-white p-2 rounded-full text-emerald-500 mt-1 text-xl">🏥</div>
+                            <div>
+                                <h3 class="text-sm font-bold text-emerald-700">${getCurrentHealth().title}</h3>
+                                <p class="text-xs text-emerald-600">${getCurrentHealth().text}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SOS -->
+                    <div class="mt-6 px-6">
+                        <button onclick="openSos()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-2 active:scale-95 transition">
+                            <span class="animate-pulse">⚠️</span> <span class="text-rose-50 text-lg">吸いたくなったら押して！</span>
+                        </button>
+                    </div>
+
+                    <!-- Gift -->
+                    <div class="mt-8 px-6 mb-24">
+                         <div class="flex justify-between items-end mb-3">
+                            <h3 class="font-bold text-slate-700 flex items-center gap-2 text-sm"><span class="bg-rose-100 text-rose-500 p-1 rounded-md">🎁</span> 推し活ショップ</h3>
+                            <div class="text-xs font-bold text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-100 shadow-sm">
+                                残高: <span class="text-rose-500 text-base" id="wallet-display">¥${state.timer.wallet.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2" id="gift-list"></div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="fixed bottom-0 left-0 w-full bg-whi
