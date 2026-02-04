@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>トキメキ禁煙メモリアル v5.8</title>
+    <title>トキメキ禁煙メモリアル v6.0</title>
     
-    <!-- エラーハンドリング (画面にエラーを表示) -->
+    <!-- エラーハンドリング -->
     <script>
         window.onerror = function(msg, url, line, col, error) {
-            var root = document.getElementById('root');
-            if (root) {
-                // 既存のコンテンツを保持しつつエラーを表示
-                var errDiv = document.createElement('div');
-                errDiv.style.cssText = "position:fixed; top:0; left:0; width:100%; background:rgba(255,255,255,0.95); color:red; padding:20px; z-index:99999; border-bottom:2px solid red; font-family:sans-serif; text-align:left;";
-                errDiv.innerHTML = '<h3>⚠️ エラーが発生しました</h3><p>' + msg + '</p><p>Line: ' + line + '</p><button onclick="localStorage.clear();location.reload();" style="margin-top:10px; padding:10px 20px; background:#333; color:white; border:none; border-radius:5px;">データをリセットして修復</button>';
-                document.body.appendChild(errDiv);
+            // Script errorの詳細はブラウザの仕様で見えないことが多いが、メッセージを出す
+            var errContainer = document.getElementById('global-error');
+            if (errContainer) {
+                errContainer.style.display = 'block';
+                document.getElementById('error-msg').innerText = msg;
             }
+            // コンソールにも出す
+            console.error('Error:', msg, url, line);
             return false;
         };
     </script>
@@ -23,12 +23,12 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React & ReactDOM (標準的な構成に戻しました) -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- React & ReactDOM (cdnjs: 最も安定したCDNを使用) -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Babel (cdnjs) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     
     <style>
         html, body {
@@ -40,52 +40,87 @@
             color: #334155;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
-            /* スクロール設定を最適化 */
             overflow-x: hidden;
             overflow-y: auto;
         }
         
-        #root {
+        /* 緊急リセットボタン（最前面固定） */
+        #emergency-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background: #ef4444;
+            color: white;
+            padding: 10px;
+            z-index: 2147483647; /* 理論上の最大値 */
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none; /* 初期は非表示、ロード遅延時のみ出す */
         }
 
-        /* アニメーション定義 */
+        /* アニメーション */
         @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
         .animate-breathe { animation: breathe 6s ease-in-out infinite; }
-
-        @keyframes tapPulse { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
-        .animate-tap { animation: tapPulse 0.2s ease-in-out; }
-
-        @keyframes circle-breathe { 0% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1.1); opacity: 0.9; } 50% { transform: scale(1.1); opacity: 0.9; } 100% { transform: scale(0.6); opacity: 0.4; } }
-        .animate-circle-breathe { animation: circle-breathe 8s ease-in-out infinite; }
         
+        @keyframes tap { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
+        .animate-tap { animation: tap 0.2s ease-in-out; }
+
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-        .animate-float { animation: float 5s ease-in-out infinite; }
+        .animate-float { animation: float 4s ease-in-out infinite; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
     </style>
 </head>
 <body>
+    <!-- 緊急リセットバー (React外で動作) -->
+    <div id="emergency-bar">
+        <p style="font-size:12px; margin-bottom:4px;">画面が動かない場合</p>
+        <button onclick="localStorage.clear(); alert('データを削除しました。ページを再読み込みします。'); location.reload();" 
+                style="background:white; color:#ef4444; border:none; padding:5px 15px; border-radius:99px; font-weight:bold; cursor:pointer;">
+            強制リセット・再読み込み
+        </button>
+        <button onclick="document.getElementById('emergency-bar').style.display='none'" 
+                style="background:rgba(0,0,0,0.2); color:white; border:none; padding:5px 10px; border-radius:99px; margin-left:10px; font-size:10px;">
+            閉じる
+        </button>
+    </div>
+
+    <!-- エラー表示エリア -->
+    <div id="global-error" style="display:none; position:fixed; top:60px; left:0; width:100%; background:white; color:red; padding:20px; z-index:9999; border-bottom:2px solid red;">
+        <h3>⚠️ エラーが発生しました</h3>
+        <p id="error-msg">Unknown Error</p>
+        <p style="font-size:12px; color:#333; margin-top:5px;">上の赤いボタンでリセットしてください。</p>
+    </div>
+
+    <!-- アプリ本体 -->
     <div id="root">
-        <!-- React起動前のローディング画面 + 緊急リセットボタン -->
+        <!-- React起動前のローディング画面 -->
         <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fb7185;">
             <div style="font-size: 3rem; margin-bottom: 1rem; animation: bounce 1s infinite;">💗</div>
-            <div style="font-weight: bold; margin-bottom: 20px;">Loading...</div>
-            
-            <!-- 起動しない場合の救済ボタン -->
-            <button onclick="if(confirm('全てのデータを削除して初期状態に戻しますか？')){localStorage.clear();location.reload();}" style="font-size: 12px; color: #999; text-decoration: underline; background: none; border: none; cursor: pointer;">
-                起動しない場合はここをタップ<br>(データリセット)
-            </button>
+            <div style="font-weight: bold; margin-bottom: 2rem;">Loading...</div>
+            <p style="font-size: 10px; color:#999;">読み込みが遅い場合は<br>上の赤いボタンを押してください</p>
         </div>
     </div>
 
+    <!-- 起動遅延時に緊急バーを表示するスクリプト -->
+    <script>
+        setTimeout(function() {
+            // 3秒経ってもReactがマウントされていなければ（ローディング画面のままなら）緊急バーを出す
+            var rootText = document.getElementById('root').innerText;
+            if (rootText.indexOf('Loading...') > -1) {
+                document.getElementById('emergency-bar').style.display = 'block';
+            }
+        }, 3000);
+    </script>
+
+    <!-- アプリケーションロジック -->
     <script type="text/babel">
         // Reactチェック
         if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+            document.getElementById('emergency-bar').style.display = 'block';
             throw new Error("Reactライブラリの読み込みに失敗しました。");
         }
 
@@ -106,7 +141,7 @@
             Piggy: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 5c-1.5 0-2.8.6-3.8 1.5l-2.5 2.5c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L11.6 3c.6-.6 1.5-.6 2.1 0l.4.4"/><path d="M2 15c0 3.9 3.1 7 7 7 2.4 0 4.5-1.2 5.8-3l.5.5c.8.8 2.1.8 2.8 0l2.8-2.8c.8-.8.8-2.1 0-2.8l-.5-.5c1.8-1.3 3-3.4 3-5.8 0-2.2-1-4.2-2.6-5.6l-3.3 3.3c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L16.4 2c-1.4-1.6-3.4-2.6-5.6-2.6-3.9 0-7 3.1-7 7v.5C2 7.8 2 8.9 2 10z"/><path d="M9 13v.01"/><path d="M15 9v.01"/></svg>,
         };
 
-        const APP_KEY = 'tokikin_v5_8'; // キー変更 (クリーンインストール)
+        const APP_KEY = 'tokikin_v6_0'; // キー変更
         
         // --- Data ---
         const SCENARIO_DB = {
@@ -351,26 +386,4 @@
                 const f = new FormData(e.target);
                 setProfile({ 
                     ...profile, 
-                    dailyTarget: parseInt(f.get('c')), 
-                    pricePerPack: parseInt(f.get('p')),
-                    goalName: f.get('goalName'),
-                    goalCost: parseInt(f.get('goalCost')) || 0,
-                    giftHistory: {}
-                });
-                setGameState('char_reg');
-            };
-
-            // ギフト購入処理 (履歴管理追加)
-            const giveGift = (gift) => {
-                if (timerData.wallet < gift.cost) return alert(`あと ¥${(gift.cost - timerData.wallet).toLocaleString()} 足りません！`);
-                
-                const newLove = (profile.love||0) + gift.love;
-                const newAccumulated = (profile.accumulatedMoney||0) - gift.cost;
-                
-                // 履歴更新
-                const history = profile.giftHistory || {};
-                const newCount = (history[gift.id] || 0) + 1;
-                const newHistory = { ...history, [gift.id]: newCount };
-
-                const newProfile = { 
-                    ...p
+              
