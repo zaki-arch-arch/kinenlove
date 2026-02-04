@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>トキメキ禁煙メモリアル 完結版</title>
+<title>トキメキ禁煙メモリアル 完動版</title>
 <style>
     /* 外部CSSを使わず、ここに全て記述します */
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -29,7 +29,7 @@
     /* パートナー画像 */
     .heroine-area { margin-top: 20px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; }
     .heroine-img { width: 280px; height: 280px; border-radius: 50%; border: 6px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); object-fit: cover; background: #e2e8f0; }
-    .balloon { background: rgba(255,255,255,0.95); padding: 15px; border-radius: 15px; border: 1px solid #ffe4e6; margin-top: -20px; position: relative; z-index: 20; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; font-weight: bold; max-width: 90%; }
+    .balloon { background: rgba(255,255,255,0.95); padding: 15px; border-radius: 15px; border: 1px solid #ffe4e6; margin-top: -20px; position: relative; z-index: 20; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; font-weight: bold; max-width: 90%; min-width: 200px; }
     
     /* 入力フォーム */
     .input-group { margin-bottom: 15px; text-align: left; }
@@ -69,12 +69,12 @@
 </head>
 <body>
 
-    <!-- ローディング画面 -->
+    <!-- ローディング画面 (JSが動かなくても表示される) -->
     <div id="loading">
         <div style="font-size:40px; margin-bottom:10px;">💗</div>
         <div style="font-weight:bold; color:#f43f5e;">Loading...</div>
         <!-- 救済ボタン -->
-        <button onclick="localStorage.clear();location.reload();" style="margin-top:30px; font-size:12px; color:#999; background:none; border:1px solid #ccc; padding:5px 10px; border-radius:5px;">
+        <button onclick="if(confirm('初期化しますか？')){localStorage.clear();location.reload();}" style="margin-top:30px; font-size:12px; color:#999; background:none; border:1px solid #ccc; padding:5px 10px; border-radius:5px;">
             動かない場合はここを押してリセット
         </button>
     </div>
@@ -84,7 +84,7 @@
 
     <script>
         // --- 設定・データ ---
-        var APP_KEY = 'tokikin_ultra_v1';
+        var APP_KEY = 'tokikin_pure_v1';
         
         var GIFTS = [
             { id: 1, name: 'コンビニスイーツ', cost: 500, icon: '🍰', love: 15 },
@@ -106,6 +106,15 @@
             { type: '小吉', love: 20, msg: '地道な努力が実を結ぶ日。' }
         ];
 
+        var HEALTH_BENEFITS = [
+            { hours: 0, title: "スタート！", text: "まずは深呼吸！体内の一酸化炭素排出が始まります。" },
+            { hours: 24, title: "心臓発作リスク低下", text: "24時間達成！心臓への負担が減り始めています。" },
+            { hours: 72, title: "ニコチン消失", text: "体内からニコチンが完全に抜けました！踏ん張りどころ！" },
+            { hours: 168, title: "睡眠リズムの改善", text: "1週間達成！睡眠の質が良くなり、目覚めがスッキリします。" },
+            { hours: 720, title: "血行改善・美肌効果", text: "1ヶ月達成！血液循環が良くなり、肌のトーンが明るくなります。" },
+            { hours: 8760, title: "心臓病リスク半減", text: "1年達成！心臓疾患のリスクが喫煙者の半分になりました！" }
+        ];
+
         // --- ステート管理 (Global) ---
         var state = {
             view: 'loading', // loading, setup, char_reg, main
@@ -113,7 +122,7 @@
             heroines: [],
             modal: null, // null | 'sos' | 'reset' | 'popup'
             popupData: null,
-            timer: { d:0, h:0, m:0, s:0, wallet:0, totalSaved:0 },
+            timer: { d:0, h:0, m:0, s:0, wallet:0, totalSaved:0, totalHours:0 },
             regMode: 'normal',
             previewImages: { normal: null, happy: null, sad: null },
             dialogue: "おかえり！"
@@ -144,16 +153,23 @@
 
         // --- コアロジック ---
         function init() {
-            if (load() && state.profile.startQuitDate) {
-                state.view = 'main';
-                checkLoginBonus();
-            } else {
-                state.profile = { dailyTarget: 20, pricePerPack: 600, money: 0, love: 0, goalName: '', goalCost: 0, lastLoginDate: null, giftHistory: {} };
-                state.view = 'setup';
+            try {
+                if (load() && state.profile.startQuitDate) {
+                    state.view = 'main';
+                    checkLoginBonus();
+                } else {
+                    state.profile = { dailyTarget: 20, pricePerPack: 600, money: 0, love: 0, goalName: '', goalCost: 0, lastLoginDate: null, giftHistory: {} };
+                    state.view = 'setup';
+                }
+                setInterval(tick, 1000); // タイマー開始
+                render();
+                
+                // ロード完了したらLoading画面を消す
+                var loadingEl = getEl('loading');
+                if(loadingEl) loadingEl.style.display = 'none';
+            } catch(e) {
+                alert("起動エラー: " + e.message);
             }
-            setInterval(tick, 1000); // タイマー開始
-            render();
-            getEl('loading').style.display = 'none'; // ローディング消去
         }
 
         function tick() {
@@ -168,8 +184,12 @@
             state.timer.m = Math.floor((diff / (1000 * 60)) % 60);
             state.timer.s = Math.floor((diff / 1000) % 60);
 
+            var totalHours = diff / (1000 * 60 * 60);
+            state.timer.totalHours = totalHours;
+
             var totalDays = diff / (1000 * 60 * 60 * 24);
             state.timer.totalSaved = Math.floor(totalDays * state.profile.dailyTarget * (state.profile.pricePerPack / 20));
+            // wallet = accumulated(補正値) + totalSaved
             state.timer.wallet = (state.profile.accumulatedMoney || 0) + state.timer.totalSaved;
 
             if (state.view === 'main') {
@@ -284,9 +304,9 @@
             render(); 
             showPopup('🎁 プレゼントしました！', g.name + 'をあげました！', '好感度 +' + g.love);
             
-            // 画像を笑顔に
+            // 画像を笑顔に (DOM直接操作)
             var imgEl = getEl('main-img');
-            if(imgEl) imgEl.src = state.heroines[0].imgHappy;
+            if(imgEl && state.heroines[0].imgHappy) imgEl.src = state.heroines[0].imgHappy;
             
             setTimeout(function() {
                 if(!state.modal && getEl('main-img')) getEl('main-img').src = state.heroines[0].img;
@@ -382,23 +402,4 @@
                 else if (state.modal === 'popup') displayImg = h.imgHappy;
 
                 var goalPercent = (state.profile.goalCost > 0) ? Math.min(100, (state.timer.totalSaved / state.profile.goalCost) * 100) : 0;
-
-                html = `
-                <div class="header">
-                    <div style="font-weight:bold; color:#f43f5e;">❤️ Lv.${Math.floor(state.profile.love/100)+1}</div>
-                    <button onclick="state.modal='reset';render()" class="btn btn-reset btn-small">🗑️ データ削除</button>
-                </div>
-                
-                <div class="container">
-                    <!-- Partner -->
-                    <div class="heroine-area">
-                        <img id="main-img" src="${displayImg}" class="heroine-img animate-breathe" onclick="updateDialogue()">
-                    </div>
-                    <div class="balloon" id="dialogue-text">${state.dialogue}</div>
-
-                    <!-- Status -->
-                    <div class="row" style="padding:20px;">
-                        <div class="card text-center">
-                            <div class="text-small">⏰ 禁煙時間</div>
-                            <div class="text-big" style="line-height:1.2;">
-                                <span id="timer-d">${state.timer.d}</span>
+               
