@@ -1,378 +1,378 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>トキメキ禁煙メモリアル v11.0</title>
-<!-- Tailwind CSS (デザイン用) -->
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-    /* 基本設定 */
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        background-color: #fff1f2; /* rose-50 */
-        color: #334155; /* slate-700 */
-        -webkit-tap-highlight-color: transparent;
-        overscroll-behavior-y: none;
-        user-select: none;
-        padding-bottom: 120px;
-        margin: 0;
-        min-height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>トキメキ禁煙メモリアル v6.1</title>
+    <meta name="theme-color" content="#fff1f2">
     
-    /* 表示制御 */
-    .hidden { display: none !important; }
-    
-    /* カスタムスクロールバー非表示 */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* アニメーション */
-    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-    .animate-breathe { animation: breathe 6s ease-in-out infinite; }
-    
-    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
-    .animate-float { animation: float 4s ease-in-out infinite; }
-
-    @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .animate-pulse-slow { animation: pulse-slow 2s infinite; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-</style>
-</head>
-<body class="bg-rose-50 text-slate-700">
-
-    <!-- 1. ロード画面 -->
-    <div id="view-loading" class="fixed inset-0 bg-rose-50 flex flex-col items-center justify-center z-[9999]">
-        <div class="text-6xl mb-4 animate-bounce">💗</div>
-        <div class="font-bold text-rose-400 mb-8">Loading...</div>
-        <!-- 救済ボタン: JSが一部壊れていても動くようにonclickに直書き -->
-        <button onclick="if(confirm('データを削除して初期化しますか？')){localStorage.clear();location.reload();}" class="px-6 py-3 bg-white border border-slate-300 rounded-full text-xs text-slate-500 shadow-sm active:bg-slate-100">
-            動かない場合はここをタップ<br>(強制初期化)
-        </button>
-    </div>
-
-    <!-- 2. セットアップ画面 -->
-    <div id="view-setup" class="hidden min-h-screen flex items-center justify-center p-6">
-        <div class="bg-white p-8 rounded-[2rem] shadow-xl w-full max-w-sm space-y-5 animate-float border-b-4 border-rose-100">
-            <h1 class="text-xl font-black text-rose-500 text-center flex items-center justify-center gap-2">
-                <span>💖</span> 禁煙メモリアル
-            </h1>
-            <div>
-                <label class="text-xs font-bold text-slate-400 ml-1">1日の本数</label>
-                <input id="inp-c" type="number" value="20" class="w-full p-3 bg-rose-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-rose-200 border border-slate-100">
-            </div>
-            <div>
-                <label class="text-xs font-bold text-slate-400 ml-1">1箱の値段</label>
-                <input id="inp-p" type="number" value="600" class="w-full p-3 bg-rose-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-rose-200 border border-slate-100">
-            </div>
-            <div class="pt-2 border-t border-rose-100">
-                <p class="text-xs font-bold text-rose-400 mb-2">✨ 目標（欲しいもの）</p>
-                <input id="inp-gn" type="text" placeholder="例: 焼肉" class="w-full p-3 bg-rose-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-rose-200 mb-2 border border-slate-100">
-                <input id="inp-gc" type="number" placeholder="金額 (円)" class="w-full p-3 bg-rose-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-rose-200 border border-slate-100">
-            </div>
-            <button onclick="app.nextSetup()" class="w-full bg-rose-500 text-white py-4 rounded-full font-bold shadow-lg shadow-rose-200 active:scale-95 transition mt-2">
-                次へ
-            </button>
-        </div>
-    </div>
-
-    <!-- 3. キャラ登録画面 -->
-    <div id="view-char" class="hidden min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 class="text-xl font-bold text-slate-700 mb-6">パートナーを選んでね</h2>
-        
-        <div class="flex bg-white rounded-full p-1.5 shadow-sm mb-6 w-full max-w-xs border border-rose-100">
-            <button onclick="app.setRegMode('normal')" id="btn-mode-normal" class="flex-1 py-2 text-xs font-bold rounded-full transition bg-rose-500 text-white">通常</button>
-            <button onclick="app.setRegMode('happy')" id="btn-mode-happy" class="flex-1 py-2 text-xs font-bold rounded-full transition text-slate-400">笑顔</button>
-            <button onclick="app.setRegMode('sad')" id="btn-mode-sad" class="flex-1 py-2 text-xs font-bold rounded-full transition text-slate-400">悲しみ</button>
-        </div>
-
-        <div id="preview-area" class="relative w-64 h-64 bg-white border-4 border-dashed border-rose-200 rounded-[2.5rem] flex items-center justify-center overflow-hidden shadow-sm mb-8 transition-colors">
-            <!-- 画像がない時の表示 -->
-            <div id="preview-placeholder" class="text-center p-4 text-rose-300">
-                <div class="text-4xl mb-2">📷</div>
-                <span class="text-xs font-bold">画像をタップして選択</span>
-            </div>
-            <!-- 画像プレビュー -->
-            <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hidden">
-            <!-- ファイル入力 -->
-            <input type="file" accept="image/*" onchange="app.handleFile(this)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-        </div>
-
-        <p class="text-xs text-slate-400 mb-4">※笑顔・悲しみは未設定でもOKです</p>
-
-        <button onclick="app.startMain()" class="w-full max-w-xs bg-rose-500 text-white py-4 rounded-full font-bold shadow-lg shadow-rose-200 active:scale-95 transition">
-            禁煙生活を始める
-        </button>
-    </div>
-
-    <!-- 4. メイン画面 -->
-    <div id="view-main" class="hidden w-full min-h-screen">
-        <!-- 背景装飾 -->
-        <div class="fixed top-0 left-0 w-full h-80 bg-rose-100 rounded-b-[60px] -z-10 shadow-inner"></div>
-
-        <!-- ヘッダー -->
-        <div class="flex justify-between items-center p-6 pt-10 sticky top-0 z-40 bg-rose-100/80 backdrop-blur-sm rounded-b-2xl">
-            <div class="flex items-center gap-2 text-rose-500 font-bold bg-white/90 px-4 py-1.5 rounded-full shadow-sm border border-white">
-                <span>❤️</span> <span id="disp-lv">Lv.1</span>
-            </div>
-            <button onclick="app.openResetModal()" class="bg-white/90 text-slate-400 text-xs font-bold px-3 py-2 rounded-full shadow-sm border border-white active:scale-95 transition flex items-center gap-1">
-                🗑️ データ削除
-            </button>
-        </div>
-
-        <!-- パートナーエリア -->
-        <div class="flex flex-col items-center mt-4 z-10">
-            <div onclick="app.tapHeroine()" class="w-72 h-72 rounded-full border-[8px] border-white shadow-xl overflow-hidden bg-slate-100 animate-breathe relative cursor-pointer active:scale-95 transition-transform">
-                <img id="main-heroine-img" class="w-full h-full object-cover">
-            </div>
-            
-            <div class="relative mt-[-25px] z-20 w-[85%] max-w-sm">
-                <div class="bg-white/95 backdrop-blur-sm p-5 rounded-2xl shadow-lg border border-rose-100 text-center animate-float">
-                    <p id="main-dialogue" class="text-sm font-bold text-slate-700 leading-relaxed">今日も我慢できて偉い！</p>
-                    <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-t border-l border-rose-100"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ステータスエリア -->
-        <div class="mt-8 px-6 grid grid-cols-2 gap-4">
-            <!-- 禁煙時間 -->
-            <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-50 flex flex-col items-center justify-center h-36 text-center">
-                <div class="text-slate-300 mb-1 text-xl">⏰</div>
-                <div class="text-[10px] text-slate-400 font-bold mb-1">禁煙時間</div>
-                <div class="font-black text-slate-700 leading-tight">
-                    <div><span id="timer-d" class="text-xl">0</span><span class="text-xs">日</span> <span id="timer-h" class="text-xl">0</span><span class="text-xs">時間</span></div>
-                    <div class="mt-1"><span id="timer-m" class="text-lg">0</span><span class="text-xs">分</span> <span id="timer-s" class="text-lg text-rose-500 font-mono">00</span><span class="text-xs">秒</span></div>
-                </div>
-            </div>
-            <!-- 累計節約 -->
-            <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-50 flex flex-col items-center justify-between h-36 text-center">
-                <div class="flex flex-col items-center w-full">
-                    <div class="text-rose-300 mb-1 text-xl">🐖</div>
-                    <div class="text-[10px] text-slate-400 font-bold mb-1">累計節約</div>
-                    <div id="val-total" class="text-2xl font-black text-rose-500">¥0</div>
-                </div>
-                
-                <!-- 目標バー -->
-                <div id="goal-area" class="w-full hidden">
-                    <div class="flex justify-between text-[10px] text-slate-500 mb-1 font-bold">
-                        <span id="goal-name" class="truncate max-w-[60px]">目標</span>
-                        <span id="goal-percent">0%</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div id="goal-bar" class="h-full bg-rose-400 transition-all duration-1000" style="width:0%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SOSボタン -->
-        <div class="mt-6 px-6">
-            <button onclick="app.openSos()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-xl shadow-slate-300 flex items-center justify-center gap-2 active:scale-95 transition overflow-hidden relative">
-                <div class="absolute inset-0 bg-white/10 animate-pulse-slow"></div>
-                <span>⚠️</span> <span class="text-lg">吸いたくなったら押して</span>
-            </button>
-        </div>
-
-        <!-- 推し活ショップ -->
-        <div class="mt-10 px-6">
-            <div class="flex justify-between items-end mb-4">
-                <h3 class="font-bold text-slate-700 flex items-center gap-2 text-sm">
-                    <span>🎁</span> 推し活ショップ
-                </h3>
-                <div class="text-[10px] font-bold text-slate-400 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-                    残高: <span id="val-wallet" class="text-rose-500 text-base ml-1">¥0</span>
-                </div>
-            </div>
-            
-            <div id="gift-list" class="flex gap-3 overflow-x-auto no-scrollbar pb-4 -mx-6 px-6">
-                <!-- ギフトはJSで生成 -->
-            </div>
-        </div>
-
-        <!-- フッター (好感度) -->
-        <div class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-100 p-4 pb-8 safe-area-pb z-30 shadow-[0_-5px_20px_rgba(0,0,0,0.02)]">
-            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-2">
-                <span>LOVE POINT</span>
-                <span id="love-text">0 / 100</span>
-            </div>
-            <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div id="love-bar" class="h-full bg-gradient-to-r from-rose-300 to-rose-500 transition-all duration-1000" style="width:0%"></div>
-            </div>
-        </div>
-
-        <!-- モーダル: SOS -->
-        <div id="modal-sos" class="hidden fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center text-white p-6 animate-fade-in">
-            <button onclick="app.closeSos()" class="absolute top-6 right-6 p-2 bg-white/10 rounded-full z-50">✕</button>
-            <h2 class="text-3xl font-black text-rose-400 mb-8 animate-pulse tracking-widest mt-10">EMERGENCY</h2>
-            <div class="relative w-64 h-64 mb-8">
-                <div class="w-full h-full rounded-full border-4 border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.3)] overflow-hidden bg-slate-800 relative z-10 animate-breathe">
-                    <img id="sos-img" class="w-full h-full object-cover filter grayscale-[30%] brightness-75">
-                </div>
-            </div>
-            <div class="w-full max-w-sm text-center space-y-6 relative z-10">
-                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                    <p id="sos-msg" class="text-lg font-bold leading-relaxed">「ダメ！吸ったら悲しいよ？」</p>
-                </div>
-                <div class="flex gap-4 justify-center mt-4">
-                    <button onclick="app.closeSos()" class="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 transition">我慢する</button>
-                    <button onclick="app.execPenalty()" class="bg-transparent border border-white/20 text-white/40 px-4 py-3 rounded-full text-xs active:bg-white/10">吸う(ペナルティ)</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- モーダル: リセット -->
-        <div id="modal-reset" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-            <div class="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl">
-                <div class="text-4xl mb-4">🗑️</div>
-                <h3 class="text-xl font-black text-slate-800 mb-2">データを削除しますか？</h3>
-                <p class="text-sm text-slate-500 mb-6 leading-relaxed">これまでの記録、パートナーとの思い出が<br/>すべて消えてしまいます。</p>
-                <div class="flex gap-3">
-                    <button onclick="app.closeResetModal()" class="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-600">キャンセル</button>
-                    <button onclick="app.hardReset()" class="flex-1 py-3 rounded-xl font-bold bg-rose-500 text-white shadow-lg">削除する</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript ロジック (外部ライブラリ不使用の安全設計) -->
+    <!-- エラーハンドリング -->
     <script>
-    (function() {
-        // 名前空間
-        var APP_KEY = 'tokikin_v11_0';
-        var DATA = {
-            profile: null,
-            heroines: [],
-            regMode: 'normal',
-            previewImages: { normal: null, happy: null, sad: null }
+        window.onerror = function(msg, url, line, col, error) {
+            var root = document.getElementById('root');
+            if (root && (!root.innerHTML || root.innerHTML === '')) {
+                document.body.innerHTML = '<div style="padding:20px; color:red; background:#fff;">' +
+                    '<h3>⚠️ 起動エラー</h3>' +
+                    '<p>' + msg + '</p>' +
+                    '<button onclick="localStorage.clear();location.reload();" style="margin-top:20px; padding:10px; border:1px solid #ccc;">データをリセットして再読み込み</button>' +
+                    '</div>';
+            }
+            return false;
+        };
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rose: { 50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 500: '#f43f5e', 600: '#e11d48' },
+                        slate: { 800: '#1e293b', 900: '#0f172a' }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #fff1f2;
+            color: #334155;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+            height: 100%;
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes heartBeat { 0% { transform: scale(1); } 14% { transform: scale(1.3); } 28% { transform: scale(1); } 42% { transform: scale(1.3); } 70% { transform: scale(1); } }
+        .animate-heartbeat { animation: heartBeat 1.5s infinite; }
+
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .animate-pop { animation: popIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root" class="h-full"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        // --- Icons ---
+        const Icons = {
+            Heart: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>,
+            Alert: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+            Settings: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
+            Gift: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>,
+            Image: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>,
+            X: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+            Trash: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+            Pulse: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>,
+            Clock: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>,
+            Wallet: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z"></path></svg>,
+            Pig: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 5c-1.5 0-2.8.6-3.8 1.5l-2.5 2.5c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L11.6 3c.6-.6 1.5-.6 2.1 0l.4.4"/><path d="M2 15c0 3.9 3.1 7 7 7 2.4 0 4.5-1.2 5.8-3l.5.5c.8.8 2.1.8 2.8 0l2.8-2.8c.8-.8.8-2.1 0-2.8l-.5-.5c1.8-1.3 3-3.4 3-5.8 0-2.2-1-4.2-2.6-5.6l-3.3 3.3c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L16.4 2c-1.4-1.6-3.4-2.6-5.6-2.6-3.9 0-7 3.1-7 7v.5C2 7.8 2 8.9 2 10z"/><path d="M9 13v.01"/><path d="M15 9v.01"/></svg>,
         };
 
-        // ギフトデータ
-        var GIFTS = [
-            { id: 1, name: 'スイーツ', cost: 500, icon: '🍰', love: 15 },
-            { id: 2, name: 'コスメ', cost: 3000, icon: '💄', love: 80 },
-            { id: 3, name: '温泉旅行', cost: 15000, icon: '♨️', love: 450 },
-            { id: 4, name: '指輪', cost: 100000, icon: '💍', love: 2500 }
-        ];
+        const APP_KEY = 'tokikin_v6_1';
 
-        // シナリオデータ
-        var SCENARIOS = {
+        // --- Constants ---
+        const SCENARIO_DB = {
             stage1: {
-                morning: ["おはよう！今日も肺をキレイにしよう！", "朝の深呼吸、気持ちいい？", "今日も記録更新頑張ろう！"],
-                day: ["お疲れ様！水飲んでリラックスしよ？", "午後の眠気はストレッチで飛ばそう！", "頑張ってるね！すごいよ。"],
-                night: ["今日もお疲れ様。吸わずに偉い！", "明日の目覚めが楽しみだね。", "ゆっくりお風呂に入って休んでね。"],
-                lateNight: ["まだ起きてるの？早く寝ないと肌に悪いよ。", "こんな時間まで起きてて大丈夫？"]
+                morning: ["おはよう！今日も一日、肺をキレイに保とうね！", "朝一番の深呼吸、気持ちいいでしょ？", "今日も禁煙記録、更新できそうかな？応援してるよ！"],
+                day: ["お疲れ様！ちょっと休憩して、お水でも飲もう？", "午後の眠気覚ましには、タバコよりストレッチが効くよ！", "あなたの努力、ちゃんと数字に出てるよ。すごいなぁ。"],
+                night: ["今日もお疲れ様。タバコなしで一日乗り切ったね！", "吸わずに寝る。それだけで明日の朝の目覚めが変わるよ。", "今日も一日頑張ったね。ゆっくりお風呂に入って休んで。"],
+                lateNight: ["…ん？まだ起きてるの？早く寝ないと肌に悪いよ。", "こんな時間まで頑張り屋さんだね。無理しないでね。"]
             },
             stage2: {
-                morning: ["おはよ！…ねえ、私との甘い空気吸って？", "今日も会えて嬉しいな。", "一日中一緒だよ。私だけ見ててね？"],
-                day: ["ねえねえ、浮いたお金でデート行きたいな。", "仕事頑張ってる背中、好きかも。", "肌ツヤ良くなった？ドキッとした。"],
-                night: ["おかえり。今日も我慢できて偉い！", "もうタバコなんて必要ないね。", "私がいれば平気でしょ？"],
-                lateNight: ["ふあぁ…眠い…。一緒に寝よ？", "夢の中でも応援してるね。"]
+                morning: ["おはよ！…ねえ、朝一番に吸うのはタバコじゃなくて、私との甘い空気でしょ？", "今日も会えて嬉しいな。あなたの健康な笑顔を見るのが日課なの。"],
+                day: ["ねえねえ、浮いたお金で今度デート行かない？なーんて。", "仕事頑張ってるあなたの背中、結構好きかも。", "最近肌ツヤ良くなってない？…ちょっとドキッとしちゃった。"],
+                night: ["おかえりなさい。今日も我慢できて偉い！頭なでなでしてあげる。", "もうタバコなんて必要ないね。だって私がいるもん。"],
+                lateNight: ["ふあぁ…眠い…。でも、あなたと少しでも長く一緒にいたくて。", "夢の中でも応援してるからね。"]
             },
             stage3: {
-                morning: ["ん…おはよ。朝からあなたを見れて幸せ。", "一生隣にいてね。約束だよ。", "私のこと、どれくらい好き？"],
-                day: ["他のこと考えちゃダメ。", "キスしてもいい？", "もう離さないからね。"],
-                night: ["ずっと一緒にいてくれてありがとう。", "世界中の誰よりも大切だよ。", "あなたの健康が私の幸せ。"],
-                lateNight: ["まだ寝ないの？朝まで付き合うよ。", "寝顔、ずっと見ててあげる。"]
+                morning: ["ん…おはよ。朝からあなたを見れるなんて、私、世界一幸せ者かも。", "一生隣にいてね。綺麗な肺のあなたと、おじいちゃんになるまで一緒にいたい。"],
+                day: ["他のこと考えてたでしょ？ダメ、禁煙中も私のことだけ考えて。", "ねえ、キスしてもいい？…タバコの味がしないあなたなら、いくらでも。", "あなたが側にいるだけで、空気まで美味しく感じるの。"],
+                night: ["ずっと一緒にいてくれてありがとう。あなたが健康でいてくれるだけで、私は生きていける。", "世界中の誰よりも、あなたが大切。…だから、絶対に長生きしてね。"],
+                lateNight: ["…まだ寝ないの？じゃあ、朝まで私のお喋りに付き合ってもらおうかな♪", "あなたが眠るまで、ずっと見ててあげる。…大好きだよ。"]
             }
         };
 
-        var SOS_MSGS = [
-            "ダメ！ここで吸ったら悲しいよ？", "私にお願い。我慢して？", "深呼吸して。私がついてる。", "健康を害するのが一番辛いよ。"
+        const HEALTH_BENEFITS = [
+            { h: 0, t: "スタート！", d: "まずは深呼吸！体内の一酸化炭素排出が始まります。" },
+            { h: 24, t: "リスク低下", d: "24時間達成！心臓への負担が減り始めています。" },
+            { h: 72, t: "ニコチン消失", d: "体内からニコチンが完全に抜けました！踏ん張りどころ！" },
+            { h: 168, t: "睡眠改善", d: "1週間達成！睡眠の質が良くなり、目覚めがスッキリします。" },
+            { h: 720, t: "美肌効果", d: "1ヶ月達成！血液循環が良くなり、肌のトーンが明るくなります。" },
+            { h: 8760, t: "健康体", d: "1年達成！心臓疾患のリスクが喫煙者の半分になりました！" }
         ];
 
-        // --- DOMヘルパー ---
-        function get(id) { return document.getElementById(id); }
-        function show(id) { get(id).classList.remove('hidden'); }
-        function hide(id) { get(id).classList.add('hidden'); }
-        function setText(id, txt) { var el = get(id); if(el) el.innerText = txt; }
-        
-        // --- ストレージ ---
-        function save() {
-            try {
-                localStorage.setItem(APP_KEY + '_profile', JSON.stringify(DATA.profile));
-                localStorage.setItem(APP_KEY + '_heroines', JSON.stringify(DATA.heroines));
-                return true;
-            } catch(e) { alert('保存容量がいっぱいです。画像を減らしてください。'); return false; }
-        }
+        const GIFTS = [
+            { id: 1, name: 'スイーツ', cost: 500, love: 50, icon: '🍰' },
+            { id: 2, name: '新作コスメ', cost: 3000, love: 350, icon: '💄' },
+            { id: 3, name: '温泉旅行', cost: 15000, love: 2000, icon: '♨️' },
+            { id: 4, name: '愛の誓い', cost: 100000, love: 9999, icon: '💍' },
+        ];
 
-        function load() {
-            try {
-                var p = localStorage.getItem(APP_KEY + '_profile');
-                var h = localStorage.getItem(APP_KEY + '_heroines');
-                if (p && h) {
-                    DATA.profile = JSON.parse(p);
-                    DATA.heroines = JSON.parse(h);
+        const SOS_MESSAGES = [
+            "ダメ！ここで吸ったら、私のこの笑顔も見納めだよ？",
+            "私のために、その一本を我慢して？…お願い。",
+            "深呼吸して。私が手、握っててあげるから。",
+            "あなたが健康を害するのが、私にとって一番の痛みなんだよ。",
+            "ねえ、私よりタバコの方が大切なの…？"
+        ];
+
+        const OMIKUJI_DATA = [
+            { id: 1, type: '大吉', love: 100, msg: '今日は最高の禁煙日和！' },
+            { id: 2, type: '中吉', love: 50, msg: '深呼吸で運気アップ！' },
+            { id: 3, type: '小吉', love: 30, msg: '地道な努力が実を結ぶ日。' },
+        ];
+
+        // --- Utils ---
+        const Storage = {
+            get: (key, def) => {
+                try {
+                    const v = localStorage.getItem(APP_KEY + '_' + key);
+                    return v ? JSON.parse(v) : def;
+                } catch(e) { return def; }
+            },
+            set: (key, val) => {
+                try {
+                    localStorage.setItem(APP_KEY + '_' + key, JSON.stringify(val));
                     return true;
-                }
-            } catch(e) {}
-            return false;
-        }
-
-        // --- 画像処理 ---
-        function resizeImage(file, callback) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var img = new Image();
-                img.onload = function() {
-                    var canvas = document.createElement('canvas');
-                    var ctx = canvas.getContext('2d');
-                    var max = 500;
-                    var w = img.width; var h = img.height;
-                    if (w > h) { if (w > max) { h *= max/w; w = max; } } else { if (h > max) { w *= max/h; h = max; } }
-                    canvas.width = w; canvas.height = h;
-                    ctx.drawImage(img, 0, 0, w, h);
-                    callback(canvas.toDataURL('image/jpeg', 0.7));
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // --- アプリ機能 ---
-        window.app = {
-            // 初期化
-            init: function() {
-                if (load() && DATA.profile.startQuitDate) {
-                    this.switchView('main');
-                    this.initMain();
-                } else {
-                    DATA.profile = { dailyTarget: 20, pricePerPack: 600, money: 0, love: 0, goalName: '', goalCost: 0, giftHistory: {} };
-                    this.switchView('setup');
-                }
-                hide('view-loading');
-            },
-
-            switchView: function(viewName) {
-                hide('view-setup');
-                hide('view-char');
-                hide('view-main');
-                show('view-' + viewName);
-            },
-
-            // セットアップ
-            nextSetup: function() {
-                DATA.profile.dailyTarget = parseInt(get('inp-c').value);
-                DATA.profile.pricePerPack = parseInt(get('inp-p').value);
-                DATA.profile.goalName = get('inp-gn').value;
-                DATA.profile.goalCost = parseInt(get('inp-gc').value) || 0;
-                this.switchView('char');
-            },
-
-            // キャラ登録
-            setRegMode: function(mode) {
-                DATA.regMode = mode;
-                ['normal', 'happy', 'sad'].forEach(function(m){
-                    var btn = get('btn-mode-'+m);
-                    if (mode === m) {
-                        btn.className = "flex-1 py-2 text-xs font-bold rounded-full transition bg-rose-500 text-white";
-                        get('preview-area').style.borderColor = (m==='normal'?'#fecdd3':(m==='happy'?'#fde047':'#93c5fd'));
-                    } else {
-                        btn.className = "flex-1 py-2 text-xs font-bold rounded-full transition text-slate-400";
+                } catch(e) {
+                    if (e.name === 'QuotaExceededError') {
+                        alert("容量不足で保存できません。画像を減らすか、リセットしてください。");
                     }
-                });
+                    return false;
+                }
+            },
+            clear: () => {
+                try {
+                    Object.keys(localStorage).forEach(k => {
+                        if(k.startsWith(APP_KEY)) localStorage.removeItem(k);
+                    });
+                } catch(e) {}
+            }
+        };
+
+        const resizeImage = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width; let h = img.height;
+                        const max = 600; 
+                        if(w > h) { if(w > max) { h *= max/w; w=max; } } else { if(h > max) { w *= max/h; h=max; } }
+                        canvas.width = w; canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        };
+
+        // --- Components ---
+        function App() {
+            const [gameState, setGameState] = useState('loading');
+            const [profile, setProfile] = useState(null);
+            const [heroines, setHeroines] = useState([]);
+            
+            // Timer & Wallet state
+            const [timerData, setTimerData] = useState({ d:0, h:0, m:0, s:0, wallet:0, totalSaved:0, totalHours: 0 });
+            
+            // UI Flags & Modes
+            const [isSosMode, setIsSosMode] = useState(false);
+            const [sosMessage, setSosMessage] = useState("");
+            const [showResetConfirm, setShowResetConfirm] = useState(false);
+            const [loginBonus, setLoginBonus] = useState(null);
+            const [giftEvent, setGiftEvent] = useState(null);
+            const [tapAnim, setTapAnim] = useState(false);
+            
+            // Registration state
+            const [previewImages, setPreviewImages] = useState({ normal: null, happy: null, sad: null });
+            
+            // Dialogue
+            const [dialogue, setDialogue] = useState("");
+
+            // 初期化
+            useEffect(() => {
+                const p = Storage.get('profile', null);
+                const h = Storage.get('heroines', []);
+                if (p && p.startQuitDate) {
+                    setProfile(p);
+                    setHeroines(h);
+                    setGameState('main');
+                } else {
+                    setProfile({ 
+                        dailyTarget: 20, 
+                        pricePerPack: 600, 
+                        accumulatedMoney: 0, 
+                        love: 0, 
+                        goalName: 'イヤホン', 
+                        goalCost: 30000, 
+                        lastLoginDate: null 
+                    });
+                    setGameState('setup');
+                }
+            }, []);
+
+            // シナリオ更新
+            useEffect(() => {
+                if (gameState === 'main' && profile) {
+                    const updateDialogue = () => {
+                        setDialogue(getScenario(profile.love));
+                    };
+                    updateDialogue();
+                }
+            }, [gameState]);
+
+            const getScenario = (love = 0) => {
+                const h = new Date().getHours();
+                let timeKey = (h >= 5 && h < 11) ? 'morning' : (h >= 11 && h < 18) ? 'day' : (h >= 23 || h < 4) ? 'lateNight' : 'night';
+                let stage = love >= 2000 ? 'stage3' : love >= 500 ? 'stage2' : 'stage1';
+                const list = SCENARIO_DB[stage][timeKey];
+                return list[Math.floor(Math.random() * list.length)];
+            };
+
+            // タイマー & 計算ロジック
+            useEffect(() => {
+                if(!profile?.startQuitDate) return;
                 
-                var img = DATA.previewImages[mode];
-     
+                // ログインボーナス
+                const todayStr = new Date().toDateString();
+                if (profile.lastLoginDate !== todayStr && gameState === 'main') {
+                    const omikuji = OMIKUJI_DATA[Math.floor(Math.random() * OMIKUJI_DATA.length)];
+                    const newLove = (profile.love || 0) + omikuji.love;
+                    const newProfile = { ...profile, love: newLove, lastLoginDate: todayStr };
+                    setProfile(newProfile);
+                    Storage.set('profile', newProfile);
+                    setTimeout(() => setLoginBonus(omikuji), 1500);
+                }
+
+                // タイマー更新
+                const tick = () => {
+                    const now = new Date();
+                    const start = new Date(profile.startQuitDate);
+                    const diffMs = now - start;
+                    if(diffMs < 0) return;
+
+                    const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+                    const m = Math.floor((diffMs / (1000 * 60)) % 60);
+                    const s = Math.floor((diffMs / 1000) % 60);
+                    const totalHours = diffMs / (1000 * 60 * 60);
+                    
+                    // 金額計算
+                    const totalDaysFloat = diffMs / (1000 * 60 * 60 * 24);
+                    const totalSaved = Math.floor(totalDaysFloat * (profile.dailyTarget || 0) * ((profile.pricePerPack || 600) / 20));
+                    
+                    const wallet = (profile.accumulatedMoney || 0) + totalSaved;
+
+                    setTimerData({ d, h, m, s, wallet, totalSaved, totalHours });
+                };
+                tick();
+                const interval = setInterval(tick, 1000);
+                return () => clearInterval(interval);
+            }, [profile, gameState]);
+
+            // SOSモードのメッセージ
+            useEffect(() => {
+                if (isSosMode) {
+                    const updateMsg = () => setSosMessage(SOS_MESSAGES[Math.floor(Math.random() * SOS_MESSAGES.length)]);
+                    updateMsg();
+                    const interval = setInterval(updateMsg, 6000);
+                    return () => clearInterval(interval);
+                }
+            }, [isSosMode]);
+
+            // 画像選択ロジック
+            const heroImages = useMemo(() => {
+                const active = heroines.find(h => h.id === profile?.currentHeroineId) || heroines[0];
+                if (!active) return { normal: null, happy: null, sad: null };
+                return {
+                    normal: active.img || null,
+                    happy: active.imgHappy || active.img || null,
+                    sad: active.imgSad || active.img || null
+                };
+            }, [heroines, profile?.currentHeroineId]);
+
+            const handleImageSelect = async (e, type) => {
+                if (e.target.files?.[0]) {
+                    try {
+                        const base64 = await resizeImage(e.target.files[0]);
+                        setPreviewImages(prev => ({ ...prev, [type]: base64 }));
+                    } catch (err) { alert("画像の読み込みに失敗しました"); }
+                }
+            };
+
+            // Setup Flow
+            const finishSetupOne = (e) => {
+                e.preventDefault();
+                const f = new FormData(e.target);
+                setProfile({ 
+                    ...profile, 
+                    dailyTarget: parseInt(f.get('c')) || 20, 
+                    pricePerPack: parseInt(f.get('p')) || 600,
+                    goalName: f.get('goalName') || '自分へのご褒美',
+                    goalCost: parseInt(f.get('goalCost')) || 10000
+                });
+                setGameState('char_reg');
+            };
+
+            const registerHeroine = () => {
+                if (!previewImages.normal) return alert("通常画像は必須です！");
+                
+                const newHeroine = { 
+                    id: Date.now().toString(), 
+                    img: previewImages.normal, 
+                    imgHappy: previewImages.happy || previewImages.normal,
+                    imgSad: previewImages.sad || previewImages.normal,
+                    createdAt: new Date().toISOString() 
+                };
+                const newHeroines = [newHeroine, ...heroines];
+                const newProfile = { 
+                    ...profile, 
+                    startQuitDate: profile.startQuitDate || new Date().toISOString(), 
+                    currentHeroineId: newHeroine.id 
+                };
+
+                if (Storage.set('heroines', newHeroines) && Storage.set('profile', newProfile)) {
+                    setHeroines(newHeroines);
+                    setProfile(newProfile);
+                    setGameState('main');
+                }
+            };
+
+            // Actions
+            const giveGift = (gift) => {
+                if (timerData.wallet < gift.cost) return alert(`あ
