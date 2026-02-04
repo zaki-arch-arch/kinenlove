@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>トキメキ禁煙メモリアル v10.0</title>
+<title>トキメキ禁煙メモリアル v11.0</title>
 <!-- Tailwind CSS (デザイン用) -->
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -16,42 +16,39 @@
         overscroll-behavior-y: none;
         user-select: none;
         padding-bottom: 120px;
+        margin: 0;
+        min-height: 100vh;
     }
     
-    /* ユーティリティ */
+    /* 表示制御 */
     .hidden { display: none !important; }
+    
+    /* カスタムスクロールバー非表示 */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
     /* アニメーション */
-    @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
     .animate-breathe { animation: breathe 6s ease-in-out infinite; }
     
-    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
     .animate-float { animation: float 4s ease-in-out infinite; }
 
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
 
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 </style>
-<!-- エラーハンドリング -->
-<script>
-    window.onerror = function(msg, url, line) {
-        // エラーが出たらアラートを出す
-        // alert('エラー: ' + msg); 
-        return false; 
-    };
-</script>
 </head>
-<body class="bg-rose-50 text-slate-700 min-h-screen">
+<body class="bg-rose-50 text-slate-700">
 
     <!-- 1. ロード画面 -->
     <div id="view-loading" class="fixed inset-0 bg-rose-50 flex flex-col items-center justify-center z-[9999]">
         <div class="text-6xl mb-4 animate-bounce">💗</div>
         <div class="font-bold text-rose-400 mb-8">Loading...</div>
-        <button onclick="app.hardReset()" class="px-6 py-3 bg-white border border-slate-300 rounded-full text-xs text-slate-500 shadow-sm active:bg-slate-100">
+        <!-- 救済ボタン: JSが一部壊れていても動くようにonclickに直書き -->
+        <button onclick="if(confirm('データを削除して初期化しますか？')){localStorage.clear();location.reload();}" class="px-6 py-3 bg-white border border-slate-300 rounded-full text-xs text-slate-500 shadow-sm active:bg-slate-100">
             動かない場合はここをタップ<br>(強制初期化)
         </button>
     </div>
@@ -205,46 +202,46 @@
                 <div id="love-bar" class="h-full bg-gradient-to-r from-rose-300 to-rose-500 transition-all duration-1000" style="width:0%"></div>
             </div>
         </div>
-    </div>
 
-    <!-- モーダル: SOS -->
-    <div id="modal-sos" class="hidden fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center text-white p-6 animate-fade-in">
-        <button onclick="app.closeSos()" class="absolute top-6 right-6 p-2 bg-white/10 rounded-full z-50">✕</button>
-        <h2 class="text-3xl font-black text-rose-400 mb-8 animate-pulse tracking-widest mt-10">EMERGENCY</h2>
-        <div class="relative w-64 h-64 mb-8">
-            <div class="w-full h-full rounded-full border-4 border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.3)] overflow-hidden bg-slate-800 relative z-10 animate-breathe">
-                <img id="sos-img" class="w-full h-full object-cover filter grayscale-[30%] brightness-75">
+        <!-- モーダル: SOS -->
+        <div id="modal-sos" class="hidden fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center text-white p-6 animate-fade-in">
+            <button onclick="app.closeSos()" class="absolute top-6 right-6 p-2 bg-white/10 rounded-full z-50">✕</button>
+            <h2 class="text-3xl font-black text-rose-400 mb-8 animate-pulse tracking-widest mt-10">EMERGENCY</h2>
+            <div class="relative w-64 h-64 mb-8">
+                <div class="w-full h-full rounded-full border-4 border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.3)] overflow-hidden bg-slate-800 relative z-10 animate-breathe">
+                    <img id="sos-img" class="w-full h-full object-cover filter grayscale-[30%] brightness-75">
+                </div>
+            </div>
+            <div class="w-full max-w-sm text-center space-y-6 relative z-10">
+                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
+                    <p id="sos-msg" class="text-lg font-bold leading-relaxed">「ダメ！吸ったら悲しいよ？」</p>
+                </div>
+                <div class="flex gap-4 justify-center mt-4">
+                    <button onclick="app.closeSos()" class="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 transition">我慢する</button>
+                    <button onclick="app.execPenalty()" class="bg-transparent border border-white/20 text-white/40 px-4 py-3 rounded-full text-xs active:bg-white/10">吸う(ペナルティ)</button>
+                </div>
             </div>
         </div>
-        <div class="w-full max-w-sm text-center space-y-6 relative z-10">
-            <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                <p id="sos-msg" class="text-lg font-bold leading-relaxed">「ダメ！吸ったら悲しいよ？」</p>
-            </div>
-            <div class="flex gap-4 justify-center mt-4">
-                <button onclick="app.closeSos()" class="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 transition">我慢する</button>
-                <button onclick="app.execPenalty()" class="bg-transparent border border-white/20 text-white/40 px-4 py-3 rounded-full text-xs active:bg-white/10">吸う(ペナルティ)</button>
+
+        <!-- モーダル: リセット -->
+        <div id="modal-reset" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl">
+                <div class="text-4xl mb-4">🗑️</div>
+                <h3 class="text-xl font-black text-slate-800 mb-2">データを削除しますか？</h3>
+                <p class="text-sm text-slate-500 mb-6 leading-relaxed">これまでの記録、パートナーとの思い出が<br/>すべて消えてしまいます。</p>
+                <div class="flex gap-3">
+                    <button onclick="app.closeResetModal()" class="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-600">キャンセル</button>
+                    <button onclick="app.hardReset()" class="flex-1 py-3 rounded-xl font-bold bg-rose-500 text-white shadow-lg">削除する</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- モーダル: リセット -->
-    <div id="modal-reset" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl">
-            <div class="text-4xl mb-4">🗑️</div>
-            <h3 class="text-xl font-black text-slate-800 mb-2">データを削除しますか？</h3>
-            <p class="text-sm text-slate-500 mb-6 leading-relaxed">これまでの記録、パートナーとの思い出が<br/>すべて消えてしまいます。</p>
-            <div class="flex gap-3">
-                <button onclick="app.closeResetModal()" class="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-600">キャンセル</button>
-                <button onclick="app.hardReset()" class="flex-1 py-3 rounded-xl font-bold bg-rose-500 text-white shadow-lg">削除する</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- JavaScript ロジック (外部ライブラリ不使用の安全設計) -->
     <script>
-    // --- アプリのコアロジック (Vanilla JS) ---
     (function() {
-        var APP_KEY = 'tokikin_v10_0';
-        
+        // 名前空間
+        var APP_KEY = 'tokikin_v11_0';
         var DATA = {
             profile: null,
             heroines: [],
@@ -252,6 +249,7 @@
             previewImages: { normal: null, happy: null, sad: null }
         };
 
+        // ギフトデータ
         var GIFTS = [
             { id: 1, name: 'スイーツ', cost: 500, icon: '🍰', love: 15 },
             { id: 2, name: 'コスメ', cost: 3000, icon: '💄', love: 80 },
@@ -259,33 +257,45 @@
             { id: 4, name: '指輪', cost: 100000, icon: '💍', love: 2500 }
         ];
 
-        var SCENARIOS = [
-            "今日も我慢できて偉い！", "タバコより私を見て？", "浮いたお金でデートしよ？",
-            "あなたが健康だと私も嬉しい。", "ずっと一緒にいようね。", "ねえ、キスしてもいい？"
-        ];
+        // シナリオデータ
+        var SCENARIOS = {
+            stage1: {
+                morning: ["おはよう！今日も肺をキレイにしよう！", "朝の深呼吸、気持ちいい？", "今日も記録更新頑張ろう！"],
+                day: ["お疲れ様！水飲んでリラックスしよ？", "午後の眠気はストレッチで飛ばそう！", "頑張ってるね！すごいよ。"],
+                night: ["今日もお疲れ様。吸わずに偉い！", "明日の目覚めが楽しみだね。", "ゆっくりお風呂に入って休んでね。"],
+                lateNight: ["まだ起きてるの？早く寝ないと肌に悪いよ。", "こんな時間まで起きてて大丈夫？"]
+            },
+            stage2: {
+                morning: ["おはよ！…ねえ、私との甘い空気吸って？", "今日も会えて嬉しいな。", "一日中一緒だよ。私だけ見ててね？"],
+                day: ["ねえねえ、浮いたお金でデート行きたいな。", "仕事頑張ってる背中、好きかも。", "肌ツヤ良くなった？ドキッとした。"],
+                night: ["おかえり。今日も我慢できて偉い！", "もうタバコなんて必要ないね。", "私がいれば平気でしょ？"],
+                lateNight: ["ふあぁ…眠い…。一緒に寝よ？", "夢の中でも応援してるね。"]
+            },
+            stage3: {
+                morning: ["ん…おはよ。朝からあなたを見れて幸せ。", "一生隣にいてね。約束だよ。", "私のこと、どれくらい好き？"],
+                day: ["他のこと考えちゃダメ。", "キスしてもいい？", "もう離さないからね。"],
+                night: ["ずっと一緒にいてくれてありがとう。", "世界中の誰よりも大切だよ。", "あなたの健康が私の幸せ。"],
+                lateNight: ["まだ寝ないの？朝まで付き合うよ。", "寝顔、ずっと見ててあげる。"]
+            }
+        };
 
         var SOS_MSGS = [
-            "ダメ！ここで吸ったら台無しだよ？", "私のために我慢して…お願い。",
-            "深呼吸して。私がついてるから。", "その1本、本当に必要？"
+            "ダメ！ここで吸ったら悲しいよ？", "私にお願い。我慢して？", "深呼吸して。私がついてる。", "健康を害するのが一番辛いよ。"
         ];
 
-        // ------------------------------------------------------------
-        //  DOM操作ヘルパー
-        // ------------------------------------------------------------
+        // --- DOMヘルパー ---
         function get(id) { return document.getElementById(id); }
         function show(id) { get(id).classList.remove('hidden'); }
         function hide(id) { get(id).classList.add('hidden'); }
         function setText(id, txt) { var el = get(id); if(el) el.innerText = txt; }
         
-        // ------------------------------------------------------------
-        //  データ管理
-        // ------------------------------------------------------------
+        // --- ストレージ ---
         function save() {
             try {
                 localStorage.setItem(APP_KEY + '_profile', JSON.stringify(DATA.profile));
                 localStorage.setItem(APP_KEY + '_heroines', JSON.stringify(DATA.heroines));
                 return true;
-            } catch(e) { alert('保存容量がいっぱいです'); return false; }
+            } catch(e) { alert('保存容量がいっぱいです。画像を減らしてください。'); return false; }
         }
 
         function load() {
@@ -301,20 +311,18 @@
             return false;
         }
 
-        // ------------------------------------------------------------
-        //  画像処理
-        // ------------------------------------------------------------
+        // --- 画像処理 ---
         function resizeImage(file, callback) {
             var reader = new FileReader();
             reader.onload = function(e) {
                 var img = new Image();
                 img.onload = function() {
                     var canvas = document.createElement('canvas');
+                    var ctx = canvas.getContext('2d');
                     var max = 500;
                     var w = img.width; var h = img.height;
                     if (w > h) { if (w > max) { h *= max/w; w = max; } } else { if (h > max) { w *= max/h; h = max; } }
                     canvas.width = w; canvas.height = h;
-                    var ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, w, h);
                     callback(canvas.toDataURL('image/jpeg', 0.7));
                 };
@@ -323,10 +331,9 @@
             reader.readAsDataURL(file);
         }
 
-        // ------------------------------------------------------------
-        //  アプリ機能 (Global公開)
-        // ------------------------------------------------------------
+        // --- アプリ機能 ---
         window.app = {
+            // 初期化
             init: function() {
                 if (load() && DATA.profile.startQuitDate) {
                     this.switchView('main');
@@ -345,7 +352,7 @@
                 show('view-' + viewName);
             },
 
-            // Setup
+            // セットアップ
             nextSetup: function() {
                 DATA.profile.dailyTarget = parseInt(get('inp-c').value);
                 DATA.profile.pricePerPack = parseInt(get('inp-p').value);
@@ -354,7 +361,7 @@
                 this.switchView('char');
             },
 
-            // Char Reg
+            // キャラ登録
             setRegMode: function(mode) {
                 DATA.regMode = mode;
                 ['normal', 'happy', 'sad'].forEach(function(m){
@@ -368,18 +375,4 @@
                 });
                 
                 var img = DATA.previewImages[mode];
-                var imgEl = get('preview-img');
-                if (img) {
-                    imgEl.src = img;
-                    show('preview-img');
-                    hide('preview-placeholder');
-                } else {
-                    hide('preview-img');
-                    show('preview-placeholder');
-                }
-            },
-
-            handleFile: function(input) {
-                if (input.files && input.files[0]) {
-                    resizeImage(input.files[0], function(base64) {
-                        DA
+     
