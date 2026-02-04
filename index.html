@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>トキメキ禁煙メモリアル v5.7</title>
+    <title>トキメキ禁煙メモリアル v5.8</title>
     
-    <!-- 重要: このボタンはReactが壊れていても動作します -->
-    <div id="emergency-reset" style="position:fixed; top:0; left:0; width:100%; background:#333; color:white; padding:15px; z-index:99999; text-align:center; display:block;">
-        <p style="font-size:12px; margin-bottom:10px;">画面が動かない場合はここを押してください</p>
-        <button onclick="localStorage.clear(); alert('データを削除しました。リロードします。'); location.reload();" style="background:#ef4444; color:white; border:none; padding:10px 20px; border-radius:5px; font-weight:bold;">
-            【緊急】データリセット
-        </button>
-        <button onclick="document.getElementById('emergency-reset').style.display='none';" style="background:#555; color:white; border:none; padding:10px 20px; border-radius:5px; margin-left:10px;">
-            閉じる
-        </button>
-    </div>
+    <!-- エラーハンドリング (画面にエラーを表示) -->
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            var root = document.getElementById('root');
+            if (root) {
+                // 既存のコンテンツを保持しつつエラーを表示
+                var errDiv = document.createElement('div');
+                errDiv.style.cssText = "position:fixed; top:0; left:0; width:100%; background:rgba(255,255,255,0.95); color:red; padding:20px; z-index:99999; border-bottom:2px solid red; font-family:sans-serif; text-align:left;";
+                errDiv.innerHTML = '<h3>⚠️ エラーが発生しました</h3><p>' + msg + '</p><p>Line: ' + line + '</p><button onclick="localStorage.clear();location.reload();" style="margin-top:10px; padding:10px 20px; background:#333; color:white; border:none; border-radius:5px;">データをリセットして修復</button>';
+                document.body.appendChild(errDiv);
+            }
+            return false;
+        };
+    </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React & ReactDOM (v17: 安定版) -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+    <!-- React & ReactDOM (標準的な構成に戻しました) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
     <!-- Babel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
         html, body {
@@ -36,22 +40,30 @@
             color: #334155;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            /* スクロール設定を最適化 */
             overflow-x: hidden;
             overflow-y: auto;
         }
         
-        /* 正常に起動したら緊急ボタンを隠すためのCSS */
-        body.loaded #emergency-reset { display: none !important; }
+        #root {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* アニメーション */
+        /* アニメーション定義 */
         @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
         .animate-breathe { animation: breathe 6s ease-in-out infinite; }
-        
-        @keyframes tap { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
-        .animate-tap { animation: tap 0.2s ease-in-out; }
 
+        @keyframes tapPulse { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
+        .animate-tap { animation: tapPulse 0.2s ease-in-out; }
+
+        @keyframes circle-breathe { 0% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1.1); opacity: 0.9; } 50% { transform: scale(1.1); opacity: 0.9; } 100% { transform: scale(0.6); opacity: 0.4; } }
+        .animate-circle-breathe { animation: circle-breathe 8s ease-in-out infinite; }
+        
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-        .animate-float { animation: float 4s ease-in-out infinite; }
+        .animate-float { animation: float 5s ease-in-out infinite; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
@@ -59,21 +71,27 @@
 </head>
 <body>
     <div id="root">
-        <!-- 初期ローディング画面 -->
-        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fb7185; padding-top: 50px;">
+        <!-- React起動前のローディング画面 + 緊急リセットボタン -->
+        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fb7185;">
             <div style="font-size: 3rem; margin-bottom: 1rem; animation: bounce 1s infinite;">💗</div>
-            <div style="font-weight: bold;">Loading...</div>
-            <p style="font-size: 10px; margin-top: 20px; color:#999;">起動しない場合は上の赤いボタンを押してください</p>
+            <div style="font-weight: bold; margin-bottom: 20px;">Loading...</div>
+            
+            <!-- 起動しない場合の救済ボタン -->
+            <button onclick="if(confirm('全てのデータを削除して初期状態に戻しますか？')){localStorage.clear();location.reload();}" style="font-size: 12px; color: #999; text-decoration: underline; background: none; border: none; cursor: pointer;">
+                起動しない場合はここをタップ<br>(データリセット)
+            </button>
         </div>
     </div>
 
     <script type="text/babel">
-        // 起動チェック: 正常にここまで来たらbodyにクラス付与（緊急ボタンを隠すため）
-        document.body.classList.add('loaded');
+        // Reactチェック
+        if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+            throw new Error("Reactライブラリの読み込みに失敗しました。");
+        }
 
         const { useState, useEffect, useMemo } = React;
 
-        // --- アイコン ---
+        // --- Icons ---
         const Icons = {
             Heart: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>,
             Alert: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
@@ -88,8 +106,9 @@
             Piggy: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 5c-1.5 0-2.8.6-3.8 1.5l-2.5 2.5c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L11.6 3c.6-.6 1.5-.6 2.1 0l.4.4"/><path d="M2 15c0 3.9 3.1 7 7 7 2.4 0 4.5-1.2 5.8-3l.5.5c.8.8 2.1.8 2.8 0l2.8-2.8c.8-.8.8-2.1 0-2.8l-.5-.5c1.8-1.3 3-3.4 3-5.8 0-2.2-1-4.2-2.6-5.6l-3.3 3.3c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L16.4 2c-1.4-1.6-3.4-2.6-5.6-2.6-3.9 0-7 3.1-7 7v.5C2 7.8 2 8.9 2 10z"/><path d="M9 13v.01"/><path d="M15 9v.01"/></svg>,
         };
 
-        const APP_KEY = 'tokikin_v5_7';
+        const APP_KEY = 'tokikin_v5_8'; // キー変更 (クリーンインストール)
         
+        // --- Data ---
         const SCENARIO_DB = {
             stage1: {
                 morning: ["おはよう！今日も一日、肺をキレイに保とうね！", "朝一番の深呼吸、気持ちいいでしょ？", "今日も禁煙記録、更新できそうかな？応援してるよ！"],
@@ -140,6 +159,7 @@
             { id: 3, type: '小吉', love: 20, msg: '地道な努力が実を結ぶ日。コツコツいこう。' },
         ];
 
+        // --- Utils ---
         const Storage = {
             get: (key, def) => {
                 try {
@@ -188,6 +208,7 @@
             });
         };
 
+        // --- Components ---
         function App() {
             const [gameState, setGameState] = useState('loading');
             const [profile, setProfile] = useState(null);
@@ -206,6 +227,7 @@
             const [previewImages, setPreviewImages] = useState({ normal: null, happy: null, sad: null });
             const [dialogue, setDialogue] = useState("");
 
+            // 初期化
             useEffect(() => {
                 const p = Storage.get('profile', null);
                 const h = Storage.get('heroines', []);
@@ -219,6 +241,7 @@
                 }
             }, []);
 
+            // シナリオ
             const getScenario = (love = 0) => {
                 const h = new Date().getHours();
                 let timeKey = (h >= 5 && h < 11) ? 'morning' : (h >= 11 && h < 18) ? 'day' : (h >= 23 || h < 4) ? 'lateNight' : 'night';
@@ -233,6 +256,7 @@
                 }
             }, [gameState]); 
 
+            // タイマー & 計算ロジック
             useEffect(() => {
                 if(!profile?.startQuitDate) return;
                 
@@ -278,6 +302,7 @@
                 }
             }, [isSosMode]);
 
+            // 画像処理 (安全に取得)
             const heroImages = useMemo(() => {
                 const active = heroines.find(h => h.id === profile?.currentHeroineId) || heroines[0];
                 if (!active) return { normal: null, happy: null, sad: null };
@@ -335,38 +360,17 @@
                 setGameState('char_reg');
             };
 
+            // ギフト購入処理 (履歴管理追加)
             const giveGift = (gift) => {
                 if (timerData.wallet < gift.cost) return alert(`あと ¥${(gift.cost - timerData.wallet).toLocaleString()} 足りません！`);
                 
                 const newLove = (profile.love||0) + gift.love;
                 const newAccumulated = (profile.accumulatedMoney||0) - gift.cost;
                 
+                // 履歴更新
                 const history = profile.giftHistory || {};
-                const newHistory = { ...history, [gift.id]: (history[gift.id] || 0) + 1 };
+                const newCount = (history[gift.id] || 0) + 1;
+                const newHistory = { ...history, [gift.id]: newCount };
 
                 const newProfile = { 
-                    ...profile, 
-                    accumulatedMoney: newAccumulated, 
-                    love: newLove,
-                    giftHistory: newHistory
-                };
-                
-                setProfile(newProfile);
-                Storage.set('profile', newProfile);
-                
-                setDialogue(`「${gift.name}！？\nすごーい！ありがとう！\n禁煙頑張ってくれて嬉しい！」`);
-                setGiftEvent({ name: gift.name, icon: gift.icon, msg: `Love +${gift.love}`, loveUp: gift.love });
-                setTimeout(() => {
-                    setGiftEvent(null);
-                    setDialogue(getScenario(newLove));
-                }, 4000);
-            };
-
-            const doFullReset = () => {
-                const now = new Date().toISOString();
-                const newProfile = { ...profile, startQuitDate: now, accumulatedMoney: 0, love: Math.max(0, (profile.love || 0) - 50) };
-                setProfile(newProfile);
-                Storage.set('profile', newProfile);
-                setShowResetConfirm(false);
-                setIsSosMode(false);
-                alert("
+                    ...p
