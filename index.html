@@ -3,88 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>トキメキ禁煙メモリアル v5.0</title>
+    <title>トキメキ禁煙メモリアル v10.1 Native</title>
+    <meta name="theme-color" content="#fff1f2">
     
     <!-- エラーハンドリング -->
     <script>
-        window.onerror = function(msg, url, line, col, error) {
-            var root = document.getElementById('root');
-            if (root && !root.innerHTML.includes('アプリ画面')) {
-                root.innerHTML = '<div style="padding:20px; color:red; background:#fff; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; overflow:auto;">' +
-                    '<h3>⚠️ エラーが発生しました</h3>' +
-                    '<p>' + msg + '</p>' +
-                    '<p>Line: ' + line + '</p>' +
-                    '<button onclick="localStorage.clear();location.reload();" style="margin-top:20px; padding:10px 20px; background:#333; color:#fff; border:none; border-radius:5px;">データをリセットして修復</button>' +
+        window.onerror = function(message, source, lineno, colno, error) {
+            var loader = document.getElementById('app-loader');
+            if (loader) {
+                loader.innerHTML = '<div style="color:red; padding:20px; text-align:center;">' +
+                    '<h3>システムエラー</h3>' +
+                    '<p>' + message + '</p>' +
+                    '<button onclick="location.reload()" style="margin-top:10px; padding:10px; border:1px solid red; background:#fff;">リロード</button>' +
                     '</div>';
             }
-            return false;
         };
     </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rose: { 50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 500: '#f43f5e', 600: '#e11d48' },
+                        slate: { 800: '#1e293b', 900: '#0f172a' }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- React & ReactDOM (Babelなし) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     
     <style>
         html, body {
             margin: 0;
             padding: 0;
-            background-color: #fff1f2; /* rose-50 */
-            color: #334155; /* slate-700 */
+            background-color: #fff1f2;
+            color: #334155;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
+            height: 100%;
         }
-        
-        /* アニメーション定義 */
-        @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
-        .animate-breathe { animation: breathe 6s ease-in-out infinite; }
-
-        @keyframes tapPulse { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
-        .animate-tap { animation: tapPulse 0.2s ease-in-out; }
-
-        @keyframes circle-breathe { 0% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1.1); opacity: 0.9; } 50% { transform: scale(1.1); opacity: 0.9; } 100% { transform: scale(0.6); opacity: 0.4; } }
-        .animate-circle-breathe { animation: circle-breathe 8s ease-in-out infinite; }
-        
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
-        .animate-float { animation: float 5s ease-in-out infinite; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes heartBeat { 0% { transform: scale(1); } 14% { transform: scale(1.3); } 28% { transform: scale(1); } 42% { transform: scale(1.3); } 70% { transform: scale(1); } }
+        .animate-heartbeat { animation: heartBeat 1.5s infinite; }
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .animate-pop { animation: popIn 0.3s ease-out forwards; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <!-- ローディング -->
+    <div id="app-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#fff1f2; display:flex; justify-content:center; align-items:center; z-index:9999; flex-direction:column;">
+        <div style="font-size:24px; color:#e11d48; font-weight:bold; margin-bottom:10px;">Loading...</div>
+        <div style="font-size:12px; color:#e11d48;">v10.1 Native Mode</div>
+    </div>
 
-    <script type="text/babel">
-        if (typeof React === 'undefined') throw new Error("React load failed");
+    <div id="root" class="h-full"></div>
 
-        const { useState, useEffect, useMemo } = React;
+    <!-- 純粋なJavaScriptとして実行 (type="text/babel"ではありません) -->
+    <script>
+        'use strict';
 
-        // --- Icons ---
-        const Icons = {
-            Heart: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>,
-            Alert: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
-            Clock: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-            Wallet: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z"/></svg>,
-            Camera: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
-            Check: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-            Activity: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
-            Trash: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
-            Smile: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
-            Star: (p) => <svg {...p} viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-        };
+        var h = React.createElement;
+        var useState = React.useState;
+        var useEffect = React.useEffect;
+        var useMemo = React.useMemo;
+        var Fragment = React.Fragment;
 
-        const APP_KEY = 'tokikin_v5_0';
-        
-        // --- Constants ---
-        const SCENARIO_DB = {
+        var APP_KEY = 'tokikin_v10_1';
+
+        // --- Data ---
+        var SCENARIO_DB = {
             stage1: {
                 morning: ["おはよう！今日も一日、肺をキレイに保とうね！", "朝一番の深呼吸、気持ちいいでしょ？", "今日も禁煙記録、更新できそうかな？応援してるよ！"],
                 day: ["お疲れ様！ちょっと休憩して、お水でも飲もう？", "午後の眠気覚ましには、タバコよりストレッチが効くよ！", "あなたの努力、ちゃんと数字に出てるよ。すごいなぁ。"],
@@ -99,284 +106,578 @@
             },
             stage3: {
                 morning: ["ん…おはよ。朝からあなたを見れるなんて、私、世界一幸せ者かも。", "一生隣にいてね。綺麗な肺のあなたと、おじいちゃんになるまで一緒にいたい。"],
-                day: ["他のこと考えてたでしょ？ダメ、禁煙中も私のことだけ考えて。", "ねえ、キスしてもいい？…タバコの味がしないあなたなら、いくらでも。"],
+                day: ["他のこと考えてたでしょ？ダメ、禁煙中も私のことだけ考えて。", "ねえ、キスしてもいい？…タバコの味がしないあなたなら、いくらでも。", "あなたが側にいるだけで、空気まで美味しく感じるの。"],
                 night: ["ずっと一緒にいてくれてありがとう。あなたが健康でいてくれるだけで、私は生きていける。", "世界中の誰よりも、あなたが大切。…だから、絶対に長生きしてね。"],
                 lateNight: ["…まだ寝ないの？じゃあ、朝まで私のお喋りに付き合ってもらおうかな♪", "あなたが眠るまで、ずっと見ててあげる。…大好きだよ。"]
             }
         };
 
-        const GIFTS = [
-            { id: 1, name: 'コンビニスイーツ', cost: 500, love: 15, icon: '🍰' },
-            { id: 2, name: '新作コスメ', cost: 3000, love: 80, icon: '💄' },
-            { id: 3, name: '温泉旅行', cost: 15000, love: 450, icon: '♨️' },
-            { id: 4, name: '愛の誓い', cost: 100000, love: 2500, icon: '💍' },
+        var HEALTH_BENEFITS = [
+            { h: 0, t: "スタート！", d: "まずは深呼吸！体内の一酸化炭素排出が始まります。" },
+            { h: 24, t: "リスク低下", d: "24時間達成！心臓への負担が減り始めています。" },
+            { h: 72, t: "ニコチン消失", d: "体内からニコチンが完全に抜けました！踏ん張りどころ！" },
+            { h: 168, t: "睡眠改善", d: "1週間達成！睡眠の質が良くなり、目覚めがスッキリします。" },
+            { h: 720, t: "美肌効果", d: "1ヶ月達成！血液循環が良くなり、肌のトーンが明るくなります。" },
+            { h: 8760, t: "健康体", d: "1年達成！心臓疾患のリスクが喫煙者の半分になりました！" }
         ];
 
-        const HEALTH_BENEFITS = [
-            { hours: 0, title: "スタート！", text: "まずは深呼吸！体内の一酸化炭素排出が始まります。" },
-            { hours: 24, title: "心臓発作リスク低下", text: "24時間達成！心臓への負担が減り始めています。" },
-            { hours: 72, title: "ニコチン消失", text: "体内からニコチンが完全に抜けました！踏ん張りどころ！" },
-            { hours: 168, title: "睡眠リズムの改善", text: "1週間達成！睡眠の質が良くなり、目覚めがスッキリします。" },
-            { hours: 720, title: "血行改善・美肌効果", text: "1ヶ月達成！血液循環が良くなり、肌のトーンが明るくなります。" },
-            { hours: 8760, title: "心臓病リスク半減", text: "1年達成！心臓疾患のリスクが喫煙者の半分になりました！" }
+        var GIFTS = [
+            { id: 1, name: 'スイーツ', cost: 500, love: 50, icon: '🍰' },
+            { id: 2, name: '新作コスメ', cost: 3000, love: 350, icon: '💄' },
+            { id: 3, name: '温泉旅行', cost: 15000, love: 2000, icon: '♨️' },
+            { id: 4, name: '愛の誓い', cost: 100000, love: 9999, icon: '💍' }
         ];
 
-        const SOS_MESSAGES = [
+        var SOS_MESSAGES = [
             "ダメ！ここで吸ったら、私のこの笑顔も見納めだよ？",
             "私のために、その一本を我慢して？…お願い。",
             "深呼吸して。私が手、握っててあげるから。",
-            "あなたが健康を害するのが、私にとって一番の痛みなんだよ。"
+            "あなたが健康を害するのが、私にとって一番の痛みなんだよ。",
+            "ねえ、私よりタバコの方が大切なの…？"
         ];
 
-        const OMIKUJI_DATA = [
-            { id: 1, type: '大吉', love: 50, msg: '今日は最高の禁煙日和！何か良いことあるかも！' },
-            { id: 2, type: '中吉', love: 30, msg: '深呼吸で運気アップ！肺が喜んでるよ。' },
-            { id: 3, type: '小吉', love: 20, msg: '地道な努力が実を結ぶ日。コツコツいこう。' },
+        var OMIKUJI_DATA = [
+            { id: 1, type: '大吉', love: 100, msg: '今日は最高の禁煙日和！' },
+            { id: 2, type: '中吉', love: 50, msg: '深呼吸で運気アップ！' },
+            { id: 3, type: '小吉', love: 30, msg: '地道な努力が実を結ぶ日。' }
         ];
+
+        // --- Icons (Native SVG) ---
+        function createIcon(dPath, isFill) {
+            return function(props) {
+                var p = Object.assign({ viewBox: "0 0 24 24", className: "w-6 h-6" }, props);
+                if (isFill) {
+                    p.fill = "currentColor";
+                    return h("svg", p, h("path", { d: dPath }));
+                } else {
+                    p.fill = "none";
+                    p.stroke = "currentColor";
+                    p.strokeWidth = "2";
+                    p.strokeLinecap = "round";
+                    p.strokeLinejoin = "round";
+                    return h("svg", p, dPath); // dPath is array of children or single child
+                }
+            };
+        }
+
+        var Icons = {
+            Heart: createIcon("M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z", true),
+            Alert: createIcon([h("circle", { cx: 12, cy: 12, r: 10 }), h("line", { x1: 12, y1: 8, x2: 12, y2: 12 }), h("line", { x1: 12, y1: 16, x2: 12.01, y2: 16 })], false),
+            Clock: createIcon([h("circle", { cx: 12, cy: 12, r: 10 }), h("polyline", { points: "12 6 12 12 16 14" })], false),
+            Wallet: createIcon([h("path", { d: "M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" }), h("path", { d: "M4 6v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z" })], false),
+            Pig: createIcon([h("path", { d: "M19 5c-1.5 0-2.8.6-3.8 1.5l-2.5 2.5c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L11.6 3c.6-.6 1.5-.6 2.1 0l.4.4" }), h("path", { d: "M2 15c0 3.9 3.1 7 7 7 2.4 0 4.5-1.2 5.8-3l.5.5c.8.8 2.1.8 2.8 0l2.8-2.8c.8-.8.8-2.1 0-2.8l-.5-.5c1.8-1.3 3-3.4 3-5.8 0-2.2-1-4.2-2.6-5.6l-3.3 3.3c-.3.3-.7.3-1 0l-2.6-2.6c-.3-.3-.3-.7 0-1L16.4 2c-1.4-1.6-3.4-2.6-5.6-2.6-3.9 0-7 3.1-7 7v.5C2 7.8 2 8.9 2 10z" }), h("path", { d: "M9 13v.01" }), h("path", { d: "M15 9v.01" })], false),
+            Pulse: createIcon([h("polyline", { points: "22 12 18 12 15 21 9 3 6 12 2 12" })], false),
+            Gift: createIcon([h("polyline", { points: "20 12 20 22 4 22 4 12" }), h("rect", { x: 2, y: 7, width: 20, height: 5 }), h("line", { x1: 12, y1: 22, x2: 12, y2: 7 }), h("path", { d: "M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" }), h("path", { d: "M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" })], false),
+            Image: createIcon([h("rect", { x: 3, y: 3, width: 18, height: 18, rx: 2, ry: 2 }), h("circle", { cx: 8.5, cy: 8.5, r: 1.5 }), h("polyline", { points: "21 15 16 10 5 21" })], false),
+            Trash: createIcon([h("polyline", { points: "3 6 5 6 21 6" }), h("path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })], false),
+        };
 
         // --- Utils ---
-        const Storage = {
-            get: (key, def) => {
+        var Storage = {
+            get: function(key, def) {
                 try {
-                    const v = localStorage.getItem(APP_KEY + '_' + key);
+                    var v = localStorage.getItem(APP_KEY + '_' + key);
                     return v ? JSON.parse(v) : def;
                 } catch(e) { return def; }
             },
-            set: (key, val) => {
+            set: function(key, val) {
                 try {
                     localStorage.setItem(APP_KEY + '_' + key, JSON.stringify(val));
                     return true;
                 } catch(e) {
                     if (e.name === 'QuotaExceededError') {
-                        alert("容量不足で保存できません。画像を減らしてください。");
+                        alert("データ容量がいっぱいです。");
                     }
                     return false;
                 }
             },
-            clear: () => {
+            clear: function() {
                 try {
-                    Object.keys(localStorage).forEach(k => {
-                        if(k.startsWith(APP_KEY)) localStorage.removeItem(k);
+                    Object.keys(localStorage).forEach(function(k) {
+                        if(k.indexOf(APP_KEY) === 0) localStorage.removeItem(k);
                     });
                 } catch(e) {}
             }
         };
 
-        const resizeImage = (file) => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width; let h = img.height;
-                        const max = 600; 
-                        if(w > h) { if(w > max) { h *= max/w; w=max; } } else { if(h > max) { w *= max/h; h=max; } }
-                        canvas.width = w; canvas.height = h;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+        var resizeImage = function(file) {
+            return new Promise(function(resolve, reject) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = new Image();
+                    img.onload = function() {
+                        try {
+                            var canvas = document.createElement('canvas');
+                            var w = img.width; var h = img.height;
+                            var max = 600; 
+                            if(w > h) { if(w > max) { h *= max/w; w=max; } } else { if(h > max) { w *= max/h; h=max; } }
+                            canvas.width = w; canvas.height = h;
+                            var ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, w, h);
+                            resolve(canvas.toDataURL('image/jpeg', 0.8));
+                        } catch(err) { reject(err); }
                     };
+                    img.onerror = function() { reject(new Error("Image Load Error")); };
                     img.src = e.target.result;
                 };
+                reader.onerror = function() { reject(new Error("File Read Error")); };
                 reader.readAsDataURL(file);
             });
         };
 
-        // --- Components ---
+        // --- App Component ---
         function App() {
-            const [gameState, setGameState] = useState('loading');
-            const [profile, setProfile] = useState(null);
-            const [heroines, setHeroines] = useState([]);
-            const [timerData, setTimerData] = useState({ d:0, h:0, m:0, s:0, money:0, totalHours: 0 });
+            var gameStateVal = useState('loading');
+            var gameState = gameStateVal[0], setGameState = gameStateVal[1];
+
+            var profileVal = useState(null);
+            var profile = profileVal[0], setProfile = profileVal[1];
+
+            var heroinesVal = useState([]);
+            var heroines = heroinesVal[0], setHeroines = heroinesVal[1];
             
-            const [isSosMode, setIsSosMode] = useState(false);
-            const [sosMessage, setSosMessage] = useState("");
-            const [isFullResetMode, setIsFullResetMode] = useState(false);
-            const [showResetConfirm, setShowResetConfirm] = useState(false);
-            const [loginBonus, setLoginBonus] = useState(null);
-            const [giftEvent, setGiftEvent] = useState(null);
-            const [tapAnim, setTapAnim] = useState(false);
+            var timerVal = useState({ d:0, h:0, m:0, s:0, wallet:0, totalSaved:0, totalHours: 0 });
+            var timerData = timerVal[0], setTimerData = timerVal[1];
 
-            const [regMode, setRegMode] = useState('normal'); 
-            const [previewImages, setPreviewImages] = useState({ normal: null, happy: null, sad: null });
-            const [dialogue, setDialogue] = useState("");
+            var sosVal = useState(false);
+            var isSosMode = sosVal[0], setIsSosMode = sosVal[1];
 
-            // 初期化
-            useEffect(() => {
-                const p = Storage.get('profile', null);
-                const h = Storage.get('heroines', []);
+            var sosMsgVal = useState("");
+            var sosMessage = sosMsgVal[0], setSosMessage = sosMsgVal[1];
+
+            var resetVal = useState(false);
+            var showResetConfirm = resetVal[0], setShowResetConfirm = resetVal[1];
+
+            var bonusVal = useState(null);
+            var loginBonus = bonusVal[0], setLoginBonus = bonusVal[1];
+
+            var giftVal = useState(null);
+            var giftEvent = giftVal[0], setGiftEvent = giftVal[1];
+
+            var tapVal = useState(false);
+            var tapAnim = tapVal[0], setTapAnim = tapVal[1];
+
+            var prevVal = useState({ normal: null, happy: null, sad: null });
+            var previewImages = prevVal[0], setPreviewImages = prevVal[1];
+
+            var dialVal = useState("");
+            var dialogue = dialVal[0], setDialogue = dialVal[1];
+
+            // Init
+            useEffect(function() {
+                var loader = document.getElementById('app-loader');
+                if (loader) loader.style.display = 'none';
+
+                var p = Storage.get('profile', null);
+                var hData = Storage.get('heroines', []);
                 if (p && p.startQuitDate) {
                     setProfile(p);
-                    setHeroines(h);
+                    setHeroines(hData);
                     setGameState('main');
                 } else {
-                    setProfile({ dailyTarget: 20, pricePerPack: 600, money: 0, love: 0, goalName: '', goalCost: 0, lastLoginDate: null });
+                    setProfile({ 
+                        dailyTarget: 20, 
+                        pricePerPack: 600, 
+                        accumulatedMoney: 0, 
+                        love: 0, 
+                        goalName: '自分へのご褒美', 
+                        goalCost: 10000, 
+                        lastLoginDate: null 
+                    });
                     setGameState('setup');
                 }
             }, []);
 
-            // シナリオ更新
-            useEffect(() => {
+            function getScenario(love) {
+                love = love || 0;
+                var h = new Date().getHours();
+                var timeKey = (h >= 5 && h < 11) ? 'morning' : (h >= 11 && h < 18) ? 'day' : (h >= 23 || h < 4) ? 'lateNight' : 'night';
+                var stage = love >= 2000 ? 'stage3' : love >= 500 ? 'stage2' : 'stage1';
+                var list = SCENARIO_DB[stage][timeKey];
+                return list[Math.floor(Math.random() * list.length)];
+            }
+
+            useEffect(function() {
                 if (gameState === 'main' && profile) {
-                    const h = new Date().getHours();
-                    let timeKey = (h >= 5 && h < 11) ? 'morning' : (h >= 11 && h < 18) ? 'day' : (h >= 23 || h < 4) ? 'lateNight' : 'night';
-                    let stage = (profile.love || 0) >= 500 ? 'stage3' : (profile.love || 0) >= 100 ? 'stage2' : 'stage1';
-                    const list = SCENARIO_DB[stage][timeKey];
-                    setDialogue(list[Math.floor(Math.random() * list.length)]);
+                    setDialogue(getScenario(profile.love));
                 }
-            }, [gameState, profile?.love]); // 依存配列修正
+            }, [gameState]);
 
-            // タイマー & ログインボーナス
-            useEffect(() => {
-                if(!profile?.startQuitDate) return;
+            useEffect(function() {
+                if(!profile || !profile.startQuitDate) return;
                 
-                // ログインボーナス
-                const todayStr = new Date().toDateString();
+                var todayStr = new Date().toDateString();
                 if (profile.lastLoginDate !== todayStr && gameState === 'main') {
-                    const omikuji = OMIKUJI_DATA[Math.floor(Math.random() * OMIKUJI_DATA.length)];
-                    const newLove = (profile.love || 0) + omikuji.love;
-                    const newProfile = { ...profile, love: newLove, lastLoginDate: todayStr };
-                    setProfile(newProfile);
-                    Storage.set('profile', newProfile);
-                    setTimeout(() => setLoginBonus(omikuji), 1500);
+                    var omikuji = OMIKUJI_DATA[Math.floor(Math.random() * OMIKUJI_DATA.length)];
+                    var nextLove = (profile.love || 0) + omikuji.love;
+                    var updatedProfile = Object.assign({}, profile, { love: nextLove, lastLoginDate: todayStr });
+                    setProfile(updatedProfile);
+                    Storage.set('profile', updatedProfile);
+                    setTimeout(function() { setLoginBonus(omikuji); }, 1500);
                 }
 
-                // タイマー
-                const tick = () => {
-                    const now = new Date();
-                    const start = new Date(profile.startQuitDate);
-                    const diffMs = now - start;
+                var tick = function() {
+                    var now = new Date();
+                    var start = new Date(profile.startQuitDate);
+                    var diffMs = now - start;
                     if(diffMs < 0) return;
 
-                    const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    const h = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-                    const m = Math.floor((diffMs / (1000 * 60)) % 60);
-                    const s = Math.floor((diffMs / 1000) % 60);
-                    const totalHours = diffMs / (1000 * 60 * 60);
-                    const totalDays = diffMs / (1000 * 60 * 60 * 24);
-                    const currentSaved = Math.floor(totalDays * profile.dailyTarget * (profile.pricePerPack / 20));
-                    const totalMoney = (profile.accumulatedMoney || 0) + currentSaved;
+                    var d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    var h = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+                    var m = Math.floor((diffMs / (1000 * 60)) % 60);
+                    var s = Math.floor((diffMs / 1000) % 60);
+                    var totalHours = diffMs / (1000 * 60 * 60);
+                    
+                    var totalDaysFloat = diffMs / (1000 * 60 * 60 * 24);
+                    var totalSaved = Math.floor(totalDaysFloat * (profile.dailyTarget || 0) * ((profile.pricePerPack || 600) / 20));
+                    var wallet = (profile.accumulatedMoney || 0) + totalSaved;
 
-                    setTimerData({ d, h, m, s, money: totalMoney, totalHours });
+                    setTimerData({ d: d, h: h, m: m, s: s, wallet: wallet, totalSaved: totalSaved, totalHours: totalHours });
                 };
                 tick();
-                const interval = setInterval(tick, 1000);
-                return () => clearInterval(interval);
+                var interval = setInterval(tick, 1000);
+                return function() { clearInterval(interval); };
             }, [profile, gameState]);
 
-            useEffect(() => {
+            useEffect(function() {
                 if (isSosMode) {
-                    const updateMsg = () => setSosMessage(SOS_MESSAGES[Math.floor(Math.random() * SOS_MESSAGES.length)]);
+                    var updateMsg = function() { setSosMessage(SOS_MESSAGES[Math.floor(Math.random() * SOS_MESSAGES.length)]); };
                     updateMsg();
-                    const interval = setInterval(updateMsg, 6000);
-                    return () => clearInterval(interval);
+                    var interval = setInterval(updateMsg, 6000);
+                    return function() { clearInterval(interval); };
                 }
             }, [isSosMode]);
 
-            // 画像処理
-            const heroImages = useMemo(() => {
-                const active = heroines.find(h => h.id === profile?.currentHeroineId) || heroines[0];
+            var heroImages = useMemo(function() {
+                var active = null;
+                if (profile && profile.currentHeroineId) {
+                    active = heroines.find(function(h) { return h.id === profile.currentHeroineId; });
+                }
+                active = active || heroines[0];
+
                 if (!active) return { normal: null, happy: null, sad: null };
                 return {
                     normal: active.img || null,
                     happy: active.imgHappy || active.img || null,
                     sad: active.imgSad || active.img || null
                 };
-            }, [heroines, profile?.currentHeroineId]);
+            }, [heroines, profile]);
 
-            const handleImageSelect = async (e, type) => {
-                if (e.target.files?.[0]) {
-                    try {
-                        const base64 = await resizeImage(e.target.files[0]);
-                        setPreviewImages(prev => ({ ...prev, [type]: base64 }));
-                    } catch (err) { alert("画像の読み込みに失敗しました"); }
+            var handleImageSelect = function(e, type) {
+                if (e.target.files && e.target.files[0]) {
+                    resizeImage(e.target.files[0]).then(function(base64) {
+                        setPreviewImages(function(prev) {
+                            var next = Object.assign({}, prev);
+                            next[type] = base64;
+                            return next;
+                        });
+                    }).catch(function() { alert("読込失敗"); });
                 }
             };
 
-            const registerHeroine = () => {
-                if (!previewImages.normal) return alert("通常画像は必須です！");
-                
-                const imgHappy = previewImages.happy || previewImages.normal;
-                const imgSad = previewImages.sad || previewImages.normal;
-
-                const newHeroine = { 
-                    id: Date.now().toString(), 
-                    img: previewImages.normal, 
-                    imgHappy, 
-                    imgSad, 
-                    createdAt: new Date().toISOString() 
-                };
-                const newHeroines = [newHeroine, ...heroines];
-                const newProfile = { 
-                    ...profile, 
-                    startQuitDate: profile.startQuitDate || new Date().toISOString(), 
-                    currentHeroineId: newHeroine.id 
-                };
-
-                if (!Storage.set('heroines', newHeroines) || !Storage.set('profile', newProfile)) return;
-
-                setHeroines(newHeroines);
-                setProfile(newProfile);
-                setGameState('main');
-            };
-
-            const finishSetup = (e) => {
+            var finishSetupOne = function(e) {
                 e.preventDefault();
-                const f = new FormData(e.target);
-                setProfile({ 
-                    ...profile, 
-                    dailyTarget: parseInt(f.get('c')), 
-                    pricePerPack: parseInt(f.get('p')),
-                    goalName: f.get('goalName'),
-                    goalCost: parseInt(f.get('goalCost')) || 0
-                });
+                var f = new FormData(e.target);
+                setProfile(Object.assign({}, profile, { 
+                    dailyTarget: parseInt(f.get('c')) || 20, 
+                    pricePerPack: parseInt(f.get('p')) || 600,
+                    goalName: f.get('goalName') || '自分へのご褒美',
+                    goalCost: parseInt(f.get('goalCost')) || 10000
+                }));
                 setGameState('char_reg');
             };
 
-            const giveGift = (gift) => {
-                if (timerData.money < gift.cost) return alert(`あと ¥${(gift.cost - timerData.money).toLocaleString()} 足りません！`);
-                const newLove = (profile.love||0) + gift.love;
-                const newProfile = { ...profile, accumulatedMoney: (profile.accumulatedMoney||0) - gift.cost, love: newLove };
-                setProfile(newProfile);
-                Storage.set('profile', newProfile);
-                setDialogue(`「${gift.name}！？\nすごーい！ありがとう！\n禁煙頑張ってくれて嬉しい！」`);
-                setGiftEvent({ name: gift.name, icon: gift.icon, msg: `Love +${gift.love}`, loveUp: gift.love });
-                setTimeout(() => setGiftEvent(null), 4000);
+            var registerHeroine = function() {
+                if (!previewImages.normal) return alert("通常画像は必須です！");
+                
+                var dateStr = new Date().toISOString();
+                var createdHeroine = { 
+                    id: Date.now().toString(), 
+                    img: previewImages.normal, 
+                    imgHappy: previewImages.happy || previewImages.normal,
+                    imgSad: previewImages.sad || previewImages.normal,
+                    createdAt: dateStr 
+                };
+                
+                var nextHeroines = [createdHeroine].concat(heroines);
+                var nextProfile = Object.assign({}, profile);
+                if (!nextProfile.startQuitDate) {
+                    nextProfile.startQuitDate = dateStr;
+                }
+                nextProfile.currentHeroineId = createdHeroine.id;
+
+                if (Storage.set('heroines', nextHeroines) && Storage.set('profile', nextProfile)) {
+                    setHeroines(nextHeroines);
+                    setProfile(nextProfile);
+                    setGameState('main');
+                }
             };
 
-            const doFullReset = () => {
-                const now = new Date().toISOString();
-                const newProfile = { ...profile, startQuitDate: now, love: Math.max(0, (profile.love || 0) - 50) };
-                setProfile(newProfile);
-                Storage.set('profile', newProfile);
-                setShowResetConfirm(false);
-                setIsSosMode(false);
-                alert("リセットしました。また始めましょう！");
+            var giveGift = function(gift) {
+                if (timerData.wallet < gift.cost) return alert("あと ¥" + (gift.cost - timerData.wallet).toLocaleString() + " 足りません！");
+                
+                var nextLove = (profile.love||0) + gift.love;
+                var nextAccumulated = (profile.accumulatedMoney||0) - gift.cost;
+                var nextProfile = Object.assign({}, profile, { accumulatedMoney: nextAccumulated, love: nextLove });
+                
+                setProfile(nextProfile);
+                Storage.set('profile', nextProfile);
+                
+                setGiftEvent(gift);
+                setTimeout(function() { setGiftEvent(null); }, 3000);
             };
 
-            const doPenalty = () => {
-                const penaltyMoney = profile.pricePerPack;
-                const penaltyLove = 10;
-                const newAccumulatedMoney = (profile.accumulatedMoney || 0) - penaltyMoney;
-                const newLove = Math.max(0, (profile.love || 0) - penaltyLove);
-                const newProfile = { ...profile, accumulatedMoney: newAccumulatedMoney, love: newLove };
-                setProfile(newProfile);
-                Storage.set('profile', newProfile);
-                setShowResetConfirm(false);
-                setIsSosMode(false);
-                alert(`「正直に言ってくれてありがとう」\n・タバコ1箱分没収\n・好感度 -${penaltyLove}`);
+            var handleTap = function() {
+                if (tapAnim) return;
+                setTapAnim(true);
+                var nextLove = (profile.love || 0) + 1;
+                var nextProfile = Object.assign({}, profile, { love: nextLove });
+                setProfile(nextProfile);
+                Storage.set('profile', nextProfile);
+                setTimeout(function() { setTapAnim(false); }, 300);
             };
 
-            const executeDataClear = () => {
-                Storage.clear();
-                window.location.reload();
+            var toggleSos = function() {
+                setIsSosMode(!isSosMode);
             };
 
-            // 画像表示ロジック
-            let currentImg = heroImages.normal;
-            if (isSosMode) currentImg = heroImages.sad;
-            else if (giftEvent || loginBonus) currentImg = heroImages.happy;
+            var resetData = function() {
+                if(confirm("データを消去しますか？")) {
+                    Storage.clear();
+                    location.reload();
+                }
+            };
 
-            const currentHealthBenefit = HEALTH_BENEFITS.filter(h => h.hours <= timerData.totalHours).pop() || HEALTH_BENEFITS[0];
-            const goalPercent = (profile?.goalCost > 0) ? Math.min(100, (timerData.money / 
+            var getHeroineImage = function() {
+                if (isSosMode) return heroImages.sad;
+                if (giftEvent || tapAnim) return heroImages.happy;
+                return heroImages.normal;
+            };
+
+            var getLevelInfo = function(love) {
+                var level = Math.floor(love / 100) + 1;
+                var nextExp = 100 - (love % 100);
+                var currentExp = love % 100;
+                return { level: level, nextExp: nextExp, currentExp: currentExp };
+            };
+
+            var getHealthBenefit = function(hours) {
+                for (var i = HEALTH_BENEFITS.length - 1; i >= 0; i--) {
+                    if (hours >= HEALTH_BENEFITS[i].h) return HEALTH_BENEFITS[i];
+                }
+                return HEALTH_BENEFITS[0];
+            };
+
+            // --- Render Logic (Native createElement) ---
+            if (gameState === 'loading') return null;
+
+            if (gameState === 'setup') {
+                return h("div", { className: "min-h-screen bg-rose-50 flex flex-col items-center justify-center p-6" },
+                    h("div", { className: "w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6" },
+                        h("div", { className: "text-center" },
+                            h("h1", { className: "text-2xl font-bold text-rose-600 mb-2" }, "トキメキ禁煙メモリアル"),
+                            h("p", { className: "text-sm text-gray-500" }, "初期設定")
+                        ),
+                        h("form", { onSubmit: finishSetupOne, className: "space-y-4" },
+                            h("div", null,
+                                h("label", { className: "block text-sm font-medium text-gray-700" }, "1日の本数"),
+                                h("input", { name: "c", type: "number", defaultValue: "20", required: true, className: "mt-1 w-full p-3 rounded-lg border border-gray-300" })
+                            ),
+                            h("div", null,
+                                h("label", { className: "block text-sm font-medium text-gray-700" }, "1箱の値段(円)"),
+                                h("input", { name: "p", type: "number", defaultValue: "600", required: true, className: "mt-1 w-full p-3 rounded-lg border border-gray-300" })
+                            ),
+                            h("div", null,
+                                h("label", { className: "block text-sm font-medium text-gray-700" }, "目標"),
+                                h("input", { name: "goalName", type: "text", placeholder: "旅行など", className: "mt-1 w-full p-3 rounded-lg border border-gray-300" })
+                            ),
+                            h("div", null,
+                                h("label", { className: "block text-sm font-medium text-gray-700" }, "目標金額(円)"),
+                                h("input", { name: "goalCost", type: "number", placeholder: "30000", className: "mt-1 w-full p-3 rounded-lg border border-gray-300" })
+                            ),
+                            h("button", { type: "submit", className: "w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl shadow-md" }, "次へ")
+                        )
+                    )
+                );
+            }
+
+            if (gameState === 'char_reg') {
+                return h("div", { className: "min-h-screen bg-rose-50 flex flex-col items-center p-6 overflow-y-auto" },
+                    h("div", { className: "w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-6 my-auto" },
+                        h("div", { className: "text-center" },
+                            h("h2", { className: "text-xl font-bold text-gray-800" }, "パートナー登録"),
+                            h("p", { className: "text-xs text-gray-500 mt-1" }, "画像を登録してください")
+                        ),
+                        [
+                            { k:'normal', l:'通常 (必須)' },
+                            { k:'happy', l:'喜び (任意)' },
+                            { k:'sad', l:'悲しみ (任意)' }
+                        ].map(function(mode) {
+                            return h("div", { key: mode.k, className: "flex items-center space-x-4" },
+                                h("div", { className: "relative w-20 h-20 bg-gray-100 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200" },
+                                    previewImages[mode.k] ? 
+                                        h("img", { src: previewImages[mode.k], className: "w-full h-full object-cover" }) :
+                                        h("div", { className: "w-full h-full flex items-center justify-center text-gray-300" }, h(Icons.Image, { className: "w-6 h-6" }))
+                                ),
+                                h("div", { className: "flex-1" },
+                                    h("label", { className: "block text-sm font-bold text-gray-700" }, mode.l),
+                                    h("input", { type: "file", accept: "image/*", onChange: function(e){ handleImageSelect(e, mode.k); }, className: "block w-full text-xs text-gray-500 mt-1" })
+                                )
+                            );
+                        }),
+                        h("div", { className: "pt-4" },
+                            h("button", { onClick: registerHeroine, className: "w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold py-4 rounded-xl shadow-lg" }, "始める！")
+                        )
+                    )
+                );
+            }
+
+            var lvlInfo = getLevelInfo(profile.love);
+            var currentBenefit = getHealthBenefit(timerData.totalHours);
+            // 進捗率は「wallet（残高）」ではなく「totalSaved（累計金額）」を基にする
+            var goalPercent = Math.min(100, Math.floor((timerData.totalSaved / profile.goalCost) * 100));
+
+            return h("div", { className: "relative h-full overflow-hidden flex flex-col transition-colors duration-700 " + (isSosMode ? 'bg-slate-900' : 'bg-rose-50') },
+                isSosMode && h("div", { className: "absolute inset-0 z-0 pointer-events-none" },
+                    h("div", { className: "absolute inset-0 bg-red-900/20 animate-pulse" })
+                ),
+                h("div", { className: "flex-1 overflow-y-auto pb-24 hide-scrollbar relative z-10" },
+                    // Header
+                    h("div", { className: "px-4 pt-4 flex justify-between items-center mb-4" },
+                        h("div", { className: "bg-white/90 backdrop-blur text-rose-500 px-4 py-1.5 rounded-full shadow-sm flex items-center space-x-1 font-bold text-sm border border-rose-100" },
+                            h(Icons.Heart, { className: "w-4 h-4" }),
+                            h("span", null, "Lv." + lvlInfo.level)
+                        ),
+                        h("button", { onClick: function(){ setShowResetConfirm(true); }, className: "bg-white/90 backdrop-blur text-gray-500 px-3 py-1.5 rounded-full shadow-sm flex items-center space-x-1 text-xs border border-gray-100 hover:bg-gray-50" },
+                            h(Icons.Trash, { className: "w-3 h-3" }),
+                            h("span", null, "削除")
+                        )
+                    ),
+                    // Heroine & Bubble
+                    h("div", { className: "flex flex-col items-center mb-8 px-4" },
+                        h("div", { 
+                            className: "relative w-48 h-48 md:w-64 md:h-64 rounded-full border-[6px] border-white shadow-xl overflow-hidden cursor-pointer transition-transform active:scale-95 " + (tapAnim ? 'scale-95' : ''),
+                            onClick: handleTap
+                        },
+                            (tapAnim && !isSosMode) && h("div", { className: "absolute inset-0 flex items-center justify-center pointer-events-none z-20" },
+                                h(Icons.Heart, { className: "w-20 h-20 text-rose-500 animate-ping opacity-75" })
+                            ),
+                            getHeroineImage() ? 
+                                h("img", { src: getHeroineImage(), className: "w-full h-full object-cover transition duration-500 " + (isSosMode ? 'grayscale-[50%] brightness-75' : '') }) :
+                                h("div", { className: "w-full h-full flex items-center justify-center bg-gray-200 text-gray-400" }, "No Image")
+                        ),
+                        h("div", { className: "mt-4 relative px-6 py-4 rounded-2xl shadow-sm max-w-sm text-center w-full animate-float " + (isSosMode ? 'bg-red-900/80 text-white border border-red-500' : 'bg-white text-slate-700 font-medium') },
+                            h("div", { className: "absolute -top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[8px] " + (isSosMode ? 'border-b-red-900/80' : 'border-b-white') }),
+                            h("p", { className: "text-sm leading-relaxed" }, isSosMode ? sosMessage : dialogue)
+                        )
+                    ),
+                    // Stats Grid
+                    h("div", { className: "px-4 grid grid-cols-2 gap-3 mb-3" },
+                        h("div", { className: "bg-white rounded-2xl p-4 shadow-sm flex flex-col justify-center items-center h-32" },
+                            h("div", { className: "text-xs text-gray-400 mb-1 flex items-center" }, h(Icons.Clock, { className: "w-3 h-3 mr-1" }), "禁煙時間"),
+                            h("div", { className: "text-slate-800 font-bold text-lg leading-tight" }, timerData.d, h("span", { className: "text-sm font-normal" }, "日"), " ", timerData.h, h("span", { className: "text-sm font-normal" }, "時間")),
+                            h("div", { className: "text-slate-800 font-bold text-lg leading-tight mt-1" }, timerData.m, h("span", { className: "text-sm font-normal" }, "分"), " ", h("span", { className: "text-rose-500" }, timerData.s), h("span", { className: "text-sm font-normal text-rose-500" }, "秒"))
+                        ),
+                        h("div", { className: "bg-white rounded-2xl p-3 shadow-sm flex flex-col h-32 relative overflow-hidden" },
+                            h("div", { className: "text-xs text-gray-400 mb-1 flex items-center" }, h(Icons.Wallet, { className: "w-3 h-3 mr-1" }), "推し活残高"),
+                            h("div", { className: "flex-1 flex flex-col justify-center" },
+                                h("div", { className: "flex items-baseline space-x-1" }, h("span", { className: "text-rose-500 font-bold text-2xl" }, "¥" + timerData.wallet.toLocaleString())),
+                                h("div", { className: "text-[10px] text-gray-400 mt-1 flex items-center" }, h(Icons.Pig, { className: "w-3 h-3 mr-1 text-gray-400" }), "累計: ¥" + timerData.totalSaved.toLocaleString())
+                            ),
+                            h("div", { className: "w-full mt-auto" },
+                                h("div", { className: "flex justify-between text-[10px] text-gray-400 mb-0.5" },
+                                    h("span", { className: "truncate max-w-[70px]" }, profile.goalName),
+                                    h("span", null, goalPercent + "%")
+                                ),
+                                h("div", { className: "w-full bg-gray-100 rounded-full h-1.5" },
+                                    h("div", { className: "bg-yellow-400 h-1.5 rounded-full transition-all duration-1000", style: { width: goalPercent + '%' } })
+                                )
+                            )
+                        )
+                    ),
+                    // Health
+                    h("div", { className: "px-4 mb-6" },
+                        h("div", { className: "bg-emerald-50 rounded-2xl p-4 flex items-start space-x-3 border border-emerald-100 shadow-sm" },
+                            h("div", { className: "bg-emerald-100 p-2 rounded-full text-emerald-600 mt-1" }, h(Icons.Pulse, { className: "w-5 h-5" })),
+                            h("div", null,
+                                h("div", { className: "font-bold text-emerald-800 text-sm" }, currentBenefit.t),
+                                h("div", { className: "text-xs text-emerald-700 leading-relaxed mt-0.5" }, currentBenefit.d)
+                            )
+                        )
+                    ),
+                    // SOS
+                    h("div", { className: "px-4 mb-8" },
+                        h("button", { onClick: toggleSos, className: "w-full py-4 rounded-full font-bold shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 " + (isSosMode ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-slate-800 text-white hover:bg-slate-900') },
+                            isSosMode ? h("span", null, "平常モードに戻る") : [h(Icons.Alert, { className: "w-5 h-5 text-rose-400" }), h("span", null, "吸いたくなったら押して！")]
+                        )
+                    ),
+                    // Gifts
+                    h("div", { className: "px-4 mb-20" },
+                        h("h3", { className: "text-sm font-bold text-gray-600 mb-3 flex items-center" }, h(Icons.Gift, { className: "w-4 h-4 mr-1 text-rose-400" }), "思い出をプレゼント"),
+                        h("div", { className: "flex space-x-3 overflow-x-auto pb-4 hide-scrollbar" },
+                            GIFTS.map(function(g) {
+                                var canBuy = timerData.wallet >= g.cost;
+                                return h("button", { 
+                                    key: g.id, 
+                                    onClick: function() { if(canBuy) giveGift(g); }, 
+                                    disabled: isSosMode,
+                                    className: "flex-shrink-0 w-32 bg-white rounded-2xl p-3 flex flex-col items-center shadow-sm border transition-all active:scale-95 " + (canBuy ? 'border-rose-100 hover:border-rose-200' : 'border-gray-100 opacity-60 grayscale')
+                                },
+                                    h("div", { className: "text-3xl mb-2" }, g.icon),
+                                    h("div", { className: "text-xs font-bold text-gray-800 mb-1" }, g.name),
+                                    h("div", { className: "text-xs font-bold rounded-full px-2 py-0.5 " + (canBuy ? 'bg-rose-50 text-rose-500' : 'bg-gray-100 text-gray-400') }, "¥" + g.cost.toLocaleString())
+                                );
+                            })
+                        )
+                    )
+                ),
+                // Footer
+                h("div", { className: "absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur border-t border-rose-100 p-3 z-30 pb-safe" },
+                    h("div", { className: "flex justify-between items-end mb-1 px-1" },
+                        h("div", { className: "text-xs font-bold text-gray-400" }, "LOVE POINT (Lv." + lvlInfo.level + ")"),
+                        h("div", { className: "text-xs font-bold text-rose-400" }, lvlInfo.currentExp + " / Next " + (lvlInfo.nextExp + lvlInfo.currentExp))
+                    ),
+                    h("div", { className: "w-full bg-gray-100 rounded-full h-2" },
+                        h("div", { className: "bg-rose-500 h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]", style: { width: (lvlInfo.currentExp / (lvlInfo.nextExp + lvlInfo.currentExp)) * 100 + '%' } })
+                    )
+                ),
+                // Overlays
+                giftEvent && h("div", { className: "fixed inset-0 z-50 flex items-center justify-center pointer-events-none" },
+                    h("div", { className: "absolute inset-0 bg-white/30 backdrop-blur-[2px]" }),
+                    h("div", { className: "relative text-center animate-heartbeat z-10 p-8 bg-white/90 rounded-3xl shadow-2xl border-4 border-rose-200" },
+                        h("div", { className: "text-8xl mb-4" }, giftEvent.icon),
+                        h("div", { className: "text-2xl font-bold text-rose-500 mb-1" }, "Love +" + giftEvent.love),
+                        h("div", { className: "text-gray-500 text-sm" }, "好感度アップ！")
+                    )
+                ),
+                loginBonus && h("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm", onClick: function(){ setLoginBonus(null); } },
+                    h("div", { className: "bg-white rounded-3xl p-8 text-center max-w-xs w-full animate-pop shadow-2xl relative overflow-hidden" },
+                        h("div", { className: "absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-rose-400 to-rose-500" }),
+                        h("div", { className: "text-sm font-bold text-gray-400 mb-2" }, "LOGIN BONUS"),
+                        h("div", { className: "text-6xl my-4" }, "⛩️"),
+                        h("div", { className: "text-3xl font-bold text-rose-600 mb-1" }, loginBonus.type),
+                        h("p", { className: "text-sm text-gray-500 mb-6" }, loginBonus.msg),
+                        h("div", { className: "inline-block bg-rose-50 text-rose-600 px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-rose-100" }, "Love +" + loginBonus.love)
+                    )
+                ),
+                showResetConfirm && h("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6" },
+                    h("div", { className: "bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-pop" },
+                        h("h3", { className: "text-lg font-bold text-gray-800 mb-4 text-center" }, "データを削除しますか？"),
+                        h("div", { className: "space-y-3" },
+                            h("button", { onClick: resetData, className: "w-full font-bold py-3 text-white bg-rose-500 rounded-xl shadow-lg hover:bg-rose-600" }, "はい、削除します"),
+                            h("button", { onClick: function(){ setShowResetConfirm(false); }, className: "w-full py-3 text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200" }, "キャンセル")
+                        )
+                    )
+                )
+            );
+        }
+
+        // Start
+        window.onload = function() {
+            var container = document.getElementById('root');
+            var root = ReactDOM.createRoot(container);
+            root.render(h(App));
+        };
+    </script>
+</body>
+</html>
